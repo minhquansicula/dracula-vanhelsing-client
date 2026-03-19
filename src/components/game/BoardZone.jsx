@@ -2,32 +2,39 @@ import React from "react";
 
 const BoardZone = ({ zone }) => {
   return (
-    <div className="bg-black/40 border border-game-bone-white/20 rounded-sm p-4 flex flex-col items-center justify-between h-40 sm:h-48 relative overflow-hidden">
-      {/* Đường phân chia ở giữa */}
-      <div className="absolute top-1/2 left-0 right-0 h-px bg-game-bone-white/10"></div>
+    <div className="w-full aspect-[3/4] bg-black/40 border border-white/10 rounded-sm p-3 flex flex-col justify-between relative overflow-hidden group hover:border-white/30 transition-colors">
+      {/* Background mờ ảo */}
+      <div className="absolute inset-0 bg-gradient-to-b from-game-vanhelsing-blood/5 via-transparent to-game-dracula-orange/5" />
 
-      {/* Khu vực của Van Helsing (Human) - Nửa trên */}
-      <div className="flex flex-wrap justify-center gap-1 z-10 w-full h-1/2 content-start pt-2">
+      {/* Số thứ tự Zone chìm ở Background */}
+      <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+        <span className="text-8xl font-black text-white/[0.03] font-['Playfair_Display']">
+          {zone.zoneIndex}
+        </span>
+      </div>
+
+      {/* Nửa trên: Human Tokens (Van Helsing) */}
+      <div className="flex flex-wrap justify-center gap-1.5 z-10 h-[45%] content-start">
         {Array.from({ length: zone.humanTokens }).map((_, i) => (
           <div
             key={`human-${i}`}
-            className="w-5 h-5 rounded-full bg-game-bone-white border border-gray-500 shadow-md"
-          ></div>
+            className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-slate-300 border-2 border-white shadow-[inset_0_-2px_4px_rgba(0,0,0,0.4),_0_2px_4px_rgba(0,0,0,0.5)]"
+            title="Nhân loại"
+          />
         ))}
       </div>
 
-      {/* Số thứ tự Zone ở giữa */}
-      <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-game-dark-teal border border-game-bone-white/30 rounded-full w-8 h-8 flex items-center justify-center font-black text-game-bone-white z-20 shadow-lg">
-        {zone.zoneIndex}
-      </div>
+      {/* Vạch chia ranh giới sinh tử */}
+      <div className="absolute top-1/2 left-4 right-4 h-px bg-white/10"></div>
 
-      {/* Khu vực của Dracula (Vampire) - Nửa dưới */}
-      <div className="flex flex-wrap justify-center gap-1 z-10 w-full h-1/2 content-end pb-2">
+      {/* Nửa dưới: Vampire Tokens (Dracula) */}
+      <div className="flex flex-wrap justify-center gap-1.5 z-10 h-[45%] content-end">
         {Array.from({ length: zone.vampireTokens }).map((_, i) => (
           <div
             key={`vampire-${i}`}
-            className="w-5 h-5 rounded-full bg-game-dracula-orange border border-red-900 shadow-[0_0_8px_rgba(225,85,37,0.8)]"
-          ></div>
+            className="w-4 h-4 sm:w-5 sm:h-5 rounded-full bg-red-600 border-2 border-red-300 shadow-[inset_0_-2px_4px_rgba(0,0,0,0.6),_0_0_10px_rgba(220,38,38,0.8)]"
+            title="Ma cà rồng"
+          />
         ))}
       </div>
     </div>

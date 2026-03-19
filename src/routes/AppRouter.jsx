@@ -16,22 +16,21 @@ import PublicRoute from "./PublicRoute";
 const AppRouter = () => {
   return (
     <Routes>
-      {/* Trang chủ - Ai cũng có thể truy cập */}
       <Route path={ROUTES.HOME} element={<LandingPage />} />
 
-      {/* Public Routes (Chỉ cho người chưa đăng nhập) */}
+      {/* Lobby bây giờ là Public - ai cũng xem được */}
+      <Route path={ROUTES.LOBBY} element={<Lobby />} />
+
       <Route element={<PublicRoute />}>
         <Route path={ROUTES.LOGIN} element={<Login />} />
         <Route path={ROUTES.REGISTER} element={<Register />} />
       </Route>
 
-      {/* Protected Routes (Bắt buộc đăng nhập) */}
+      {/* Chỉ khi vào phòng chơi thực sự mới bắt đăng nhập */}
       <Route element={<ProtectedRoute />}>
-        <Route path={ROUTES.LOBBY} element={<Lobby />} />
         <Route path={ROUTES.GAME_ROOM} element={<GameRoom />} />
       </Route>
 
-      {/* 404 Route */}
       <Route path={ROUTES.NOT_FOUND} element={<NotFound />} />
     </Routes>
   );

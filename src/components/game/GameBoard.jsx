@@ -3,7 +3,6 @@ import Card from "./Card";
 import BoardZone from "./BoardZone";
 
 const GameBoard = () => {
-  // Dữ liệu giả (Mock Data) để code giao diện không cần BE
   const mockGameState = {
     roundNumber: 1,
     currentTurnUserId: "user-1",
@@ -17,9 +16,9 @@ const GameBoard = () => {
     ],
     players: [
       {
-        userId: "user-1", // Giả sử đây là mình
-        username: "MinhQuan (Dracula)",
-        faction: 0,
+        userId: "user-1",
+        username: "Lãnh Chúa",
+        faction: 0, // Dracula
         health: 12,
         hand: [
           { cardId: 1, color: 0, value: 5, isRevealed: false },
@@ -30,10 +29,10 @@ const GameBoard = () => {
         ],
       },
       {
-        userId: "user-2", // Đối thủ
-        username: "Kẻ Thù (Van Helsing)",
-        faction: 1,
-        health: 0,
+        userId: "user-2",
+        username: "Giáo Sư",
+        faction: 1, // Van Helsing
+        health: 12,
         hand: [
           { cardId: 6, isRevealed: false },
           { cardId: 7, isRevealed: false },
@@ -48,47 +47,101 @@ const GameBoard = () => {
   const myPlayer = mockGameState.players[0];
   const opponent = mockGameState.players[1];
 
+  // Helper render bảng màu sức mạnh
+  const renderColorRanking = () => {
+    const colors = {
+      0: "bg-red-600",
+      1: "bg-fuchsia-600",
+      2: "bg-emerald-600",
+      3: "bg-amber-500",
+    };
+    return (
+      <div className="flex items-center gap-3 bg-black/40 px-6 py-2 border border-white/10 text-xs font-bold uppercase tracking-widest text-white/50">
+        <span>Sức mạnh:</span>
+        {mockGameState.colorRanking.map((colorKey, index) => (
+          <div key={index} className="flex items-center gap-2">
+            <div
+              className={`w-3 h-3 rounded-sm ${colors[colorKey]} shadow-[0_0_8px_currentColor]`}
+            />
+            {index < 3 && <span>&gt;</span>}
+          </div>
+        ))}
+      </div>
+    );
+  };
+
   return (
-    <div className="flex flex-col h-full justify-between gap-6 p-4">
-      {/* KHU VỰC ĐỐI THỦ (Phía trên) */}
-      <div className="flex flex-col items-center">
-        <div className="flex justify-between w-full max-w-4xl mb-4 text-game-bone-white/70">
-          <span className="font-bold uppercase tracking-widest">
+    <div className="flex flex-col h-full justify-between items-center w-full max-w-5xl mx-auto gap-4 py-4">
+      {/* THANH THÔNG TIN ĐỐI THỦ (Top) */}
+      <div className="w-full flex justify-between items-end px-4 border-b border-white/10 pb-2">
+        <div className="flex flex-col">
+          <span className="text-[10px] text-game-vanhelsing-blood uppercase tracking-[0.3em] font-bold">
+            Kẻ Thù
+          </span>
+          <span className="text-xl font-['Playfair_Display'] uppercase tracking-widest text-white/80">
             {opponent.username}
           </span>
-          <span>HP: {opponent.health > 0 ? opponent.health : "∞"}</span>
         </div>
-        <div className="flex gap-2 sm:gap-4">
-          {opponent.hand.map((card, i) => (
-            <Card key={`opp-card-${i}`} isHidden={!card.isRevealed} />
-          ))}
+        <div className="text-right">
+          <span className="text-3xl font-black text-game-bone-white font-['Playfair_Display']">
+            {opponent.health}
+          </span>
+          <span className="text-[10px] uppercase text-white/40 ml-1 tracking-widest">
+            HP
+          </span>
         </div>
       </div>
 
-      {/* BÀN CỜ CHÍNH (Ở giữa) */}
-      <div className="grid grid-cols-5 gap-2 sm:gap-4 max-w-5xl mx-auto w-full">
+      {/* BÀI CỦA ĐỐI THỦ (Grid 5 cột dóng thẳng Board) */}
+      <div className="w-full grid grid-cols-5 gap-3 md:gap-6 px-4">
+        {opponent.hand.map((card, i) => (
+          <Card
+            key={`opp-card-${i}`}
+            isHidden={!card.isRevealed}
+            className="rotate-180"
+          />
+        ))}
+      </div>
+
+      {/* BẢNG ƯU TIÊN MÀU SẮC (Color Ranking) */}
+      <div className="w-full flex justify-center my-2">
+        {renderColorRanking()}
+      </div>
+
+      {/* BÀN CỜ CHÍNH (Grid 5 cột) */}
+      <div className="w-full grid grid-cols-5 gap-3 md:gap-6 px-4">
         {mockGameState.zones.map((zone) => (
           <BoardZone key={`zone-${zone.zoneIndex}`} zone={zone} />
         ))}
       </div>
 
-      {/* KHU VỰC CỦA MÌNH (Phía dưới) */}
-      <div className="flex flex-col items-center">
-        <div className="flex gap-2 sm:gap-4 mb-4">
-          {myPlayer.hand.map((card, i) => (
-            <Card
-              key={`my-card-${i}`}
-              cardData={card}
-              isHidden={card.isRevealed}
-            />
-          ))}
-        </div>
-        <div className="flex justify-between w-full max-w-4xl text-game-bone-white">
-          <span className="font-bold text-game-dracula-orange uppercase tracking-widest">
+      {/* BÀI CỦA MÌNH (Grid 5 cột) */}
+      <div className="w-full grid grid-cols-5 gap-3 md:gap-6 px-4 mt-2">
+        {myPlayer.hand.map((card, i) => (
+          <Card
+            key={`my-card-${i}`}
+            cardData={card}
+            isHidden={card.isRevealed}
+          />
+        ))}
+      </div>
+
+      {/* THANH THÔNG TIN BẢN THÂN (Bottom) */}
+      <div className="w-full flex justify-between items-start px-4 border-t border-white/10 pt-2">
+        <div className="flex flex-col">
+          <span className="text-[10px] text-game-dracula-orange uppercase tracking-[0.3em] font-bold">
+            Lãnh Địa Của Bạn
+          </span>
+          <span className="text-xl font-['Playfair_Display'] uppercase tracking-widest text-white">
             {myPlayer.username}
           </span>
-          <span className="font-black text-game-vanhelsing-blood">
-            HP: {myPlayer.health}
+        </div>
+        <div className="text-right">
+          <span className="text-3xl font-black text-game-dracula-orange font-['Playfair_Display']">
+            {myPlayer.health}
+          </span>
+          <span className="text-[10px] uppercase text-game-dracula-orange/60 ml-1 tracking-widest">
+            HP
           </span>
         </div>
       </div>

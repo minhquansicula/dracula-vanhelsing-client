@@ -1,72 +1,121 @@
-import React from "react";
-import { Link } from "react-router-dom";
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { ROUTES } from "../../constants/routes";
 import Button from "../../components/ui/Button";
 
 const LandingPage = () => {
+  const navigate = useNavigate();
+  const [isTransitioning, setIsTransitioning] = useState(false);
+
+  const handleStartHunt = (e) => {
+    e.preventDefault();
+    setIsTransitioning(true);
+    setTimeout(() => {
+      navigate(ROUTES.LOBBY);
+    }, 800);
+  };
+
   return (
-    <div className="min-h-screen bg-game-dark-teal text-game-bone-white relative overflow-hidden flex flex-col items-center justify-center p-4 antialiased font-['Inter']">
-      {/* 1. Hiệu ứng nền ma mị (Sương mù ánh sáng rộng) */}
-      <div className="absolute inset-0 z-0 pointer-events-none">
-        {/* Hào quang Dracula (Cam bốc lửa) - Rộng và mờ ảo */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-x-full -translate-y-1/2 w-[60vw] h-[60vw] bg-game-dracula-orange rounded-full blur-[250px] opacity-15"></div>
-        {/* Hào quang Van Helsing (Đỏ máu) - Rộng và mờ ảo */}
-        <div className="absolute top-1/2 left-1/2 transform translate-y-[-50%] w-[60vw] h-[60vw] bg-game-vanhelsing-blood rounded-full blur-[250px] opacity-15"></div>
+    <div className="relative min-h-screen w-full bg-black overflow-hidden font-['Inter']">
+      {/* 1. Background Layer (Phóng to khi chuyển trang) */}
+      <div
+        className={`absolute inset-0 z-0 bg-cover bg-center transition-transform duration-[1200ms] ease-in-out ${
+          isTransitioning ? "scale-125 rotate-1" : "scale-105"
+        }`}
+        style={{ backgroundImage: `url('/assets/images/image_3.png')` }}
+      />
 
-        {/* Lớp phủ tối nhẹ để tăng độ sâu */}
-        <div className="absolute inset-0 bg-black opacity-10"></div>
-      </div>
+      {/* 2. Overlay Layers (Tạo không khí mộng mị) */}
+      <div className="absolute inset-0 z-0 bg-[radial-gradient(circle,_transparent_10%,_rgba(0,0,0,0.85)_100%)] pointer-events-none" />
+      <div
+        className={`absolute inset-0 z-10 bg-black/50 transition-opacity duration-1000 ${isTransitioning ? "opacity-100" : "opacity-40"}`}
+      />
 
-      {/* 2. Nội dung chính (Centralized & Minimalist) */}
-      <div className="relative z-10 text-center flex flex-col items-center max-w-4xl mx-auto mt-[-10vh]">
-        {/* Tiêu đề chính: Hiện đại, sạch sẽ, nhưng imposes */}
-        <h1 className="text-7xl md:text-9xl font-black text-game-bone-white uppercase tracking-[-0.05em] mb-4 flex items-center gap-x-6">
-          <span className="shadow-text-lg">Dracula</span>
+      {/* 3. Transition Flash to Black */}
+      <div
+        className={`fixed inset-0 z-50 bg-black pointer-events-none transition-opacity duration-800 ${isTransitioning ? "opacity-100" : "opacity-0"}`}
+      />
 
-          {/* Điểm nhấn ma mị cổ điển duy nhất: font Serif đỏ */}
-          <span className="text-6xl md:text-8xl text-game-vanhelsing-blood font-['Playfair_Display'] font-black italic shadow-text-md relative top-[-5px]">
-            VS
-          </span>
+      {/* 4. Main Content Container */}
+      <div
+        className={`relative z-20 flex flex-col items-center justify-center min-h-screen px-6 transition-all duration-1000 ${
+          isTransitioning ? "opacity-0 scale-95" : "opacity-100 scale-100"
+        }`}
+      >
+        {/* Logo Section - Phân bố đối xứng dọc */}
+        <div className="mb-14 select-none relative group flex flex-col items-center">
+          <h1 className="text-7xl md:text-[10rem] font-black uppercase tracking-[-0.04em] flex flex-col items-center font-['Playfair_Display'] leading-[0.85]">
+            <span className="text-game-dracula-orange drop-shadow-[0_0_20px_rgba(225,85,37,0.5)]">
+              Dracula
+            </span>
+            <span className="mt-4 text-game-vanhelsing-blood drop-shadow-[0_0_20px_rgba(154,27,31,0.5)]">
+              Van Helsing
+            </span>
+          </h1>
+          <div className="absolute inset-0 flex items-center justify-center pt-4">
+            <span className="text-4xl md:text-6xl text-white font-['Playfair_Display'] font-black italic opacity-90 drop-shadow-[0_0_10px_rgba(0,0,0,1)]">
+              VS
+            </span>
+          </div>
+        </div>
 
-          <span className="shadow-text-lg">Van Helsing</span>
-        </h1>
-
-        {/* Câu trích dẫn: Đơn giản, tinh tế, font serif ma mị */}
-        <p className="text-xl md:text-2xl text-game-bone-white/60 italic max-w-2xl leading-relaxed mb-20 font-['Playfair_Display'] tracking-wide">
-          "Đêm đen buông xuống London. Ai sẽ là kẻ thống trị cuối cùng?"
+        {/* Tagline - Hiện đại & Tinh tế */}
+        <p className="text-game-bone-white/70 text-sm md:text-lg uppercase tracking-[0.4em] mb-16 font-['Playfair_Display'] italic shadow-text-sm max-w-xl text-center">
+          "Khi sương mù London nhuốm máu, kẻ săn sẽ trở thành con mồi"
         </p>
 
-        {/* 3. Nút bấm (Hiện đại & Đơn giản) */}
-        <div className="flex flex-col sm:flex-row gap-8 w-full justify-center">
-          <Link to={ROUTES.LOBBY} className="w-full sm:w-auto">
+        {/* 5. PHẦN SỬA ĐỔI: Phân bố nút bấm đối xứng (Actions Section) */}
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-8 w-full max-w-3xl">
+          {/* Nút chính: Bắt đầu cuộc săn */}
+          <div className="w-full sm:w-auto order-1 sm:order-1">
             <Button
               variant="dracula"
               size="lg"
-              className="w-full sm:w-80 text-lg py-5 font-bold uppercase tracking-widest bg-game-dracula-orange/90 border-game-dracula-orange/30 backdrop-blur-sm transition-all hover:bg-game-dracula-orange hover:shadow-[0_0_30px_rgba(225,85,37,0.5)] active:scale-[0.98]"
+              className="w-full sm:w-80 text-xl py-6 font-bold uppercase tracking-[0.2em] 
+                         bg-game-dracula-orange border-none 
+                         shadow-[0_0_40px_rgba(225,85,37,0.3)] 
+                         hover:shadow-[0_0_60px_rgba(225,85,37,0.6)] 
+                         hover:scale-105 transition-all duration-300
+                         font-['Playfair_Display'] rounded-none"
+              onClick={handleStartHunt}
             >
               Bắt Đầu Cuộc Săn
             </Button>
-          </Link>
-          <a
-            href="https://boardgamegeek.com/boardgame/380695/dracula-vs-van-helsing"
-            target="_blank"
-            rel="noreferrer"
-            className="w-full sm:w-auto"
-          >
-            <Button
-              variant="vanhelsing"
-              size="lg"
-              className="w-full sm:w-80 text-lg py-5 font-bold uppercase tracking-widest bg-transparent border-game-bone-white/20 text-game-bone-white backdrop-blur-sm transition-all hover:bg-game-bone-white/5 hover:border-game-bone-white/40 hover:shadow-[0_0_30px_rgba(212,214,198,0.1)] active:scale-[0.98]"
+          </div>
+
+          {/* Nút phụ: Luật chơi - Thiết kế Minimalist hiện đại */}
+          <div className="w-full sm:w-auto order-2 sm:order-2">
+            <a
+              href="https://boardgamegeek.com/boardgame/380695/dracula-vs-van-helsing"
+              target="_blank"
+              rel="noreferrer"
+              className="block w-full"
             >
-              Xem Luật Chơi
-            </Button>
-          </a>
+              <Button
+                variant="vanhelsing"
+                size="lg"
+                className="w-full sm:w-80 text-xl py-6 font-bold uppercase tracking-[0.2em]
+                           bg-transparent border border-white/20 text-white/80 
+                           hover:bg-white/5 hover:border-white/60 hover:text-white
+                           hover:scale-105 transition-all duration-300
+                           font-['Playfair_Display'] rounded-none backdrop-blur-sm"
+              >
+                Xem Luật Chơi
+              </Button>
+            </a>
+          </div>
         </div>
       </div>
 
-      {/* 4. Footer (Cực kỳ đơn giản) */}
-      <footer className="absolute bottom-6 text-game-bone-white/30 text-xs uppercase tracking-[0.2em] font-medium">
-        © Phiên bản phi thương mại
+      {/* Footer trang trí cực đơn giản */}
+      <footer className="absolute bottom-10 w-full text-center z-20 pointer-events-none">
+        <div className="flex items-center justify-center gap-4 opacity-20">
+          <div className="h-px w-12 bg-game-bone-white" />
+          <span className="text-[10px] uppercase tracking-[0.5em] font-medium text-game-bone-white">
+            London 1888
+          </span>
+          <div className="h-px w-12 bg-game-bone-white" />
+        </div>
       </footer>
     </div>
   );
