@@ -1,12 +1,18 @@
-import React from "react";
+import React, { useState } from "react";
 import Card from "./Card";
-import BoardZone from "./BoardZone";
+
+import boardBg from "../../assets/images/board-bg.png";
+import bloodToken from "../../assets/images/blood.svg";
+import coffinToken from "../../assets/images/coffin.svg";
+import candleToken from "../../assets/images/candle.svg";
+import crossToken from "../../assets/images/cross.svg";
+
+import { districts } from "../../components/game/bonus/mapConfig";
 
 const GameBoard = () => {
   const mockGameState = {
     roundNumber: 1,
-    currentTurnUserId: "user-1",
-    colorRanking: [0, 2, 1, 3], // Red > Green > Purple > Yellow
+    colorRanking: [0, 1, 2, 3],
     zones: [
       { zoneIndex: 1, humanTokens: 4, vampireTokens: 0 },
       { zoneIndex: 2, humanTokens: 3, vampireTokens: 1 },
@@ -18,7 +24,7 @@ const GameBoard = () => {
       {
         userId: "user-1",
         username: "Lãnh Chúa",
-        faction: 0, // Dracula
+        faction: 0,
         health: 12,
         hand: [
           { cardId: 1, color: 0, value: 5, isRevealed: false },
@@ -31,7 +37,7 @@ const GameBoard = () => {
       {
         userId: "user-2",
         username: "Giáo Sư",
-        faction: 1, // Van Helsing
+        faction: 1,
         health: 12,
         hand: [
           { cardId: 6, isRevealed: false },
@@ -47,103 +53,176 @@ const GameBoard = () => {
   const myPlayer = mockGameState.players[0];
   const opponent = mockGameState.players[1];
 
-  // Helper render bảng màu sức mạnh
+  const [ranking, setRanking] = useState(mockGameState.colorRanking);
+  const [draggedItemIndex, setDraggedItemIndex] = useState(null);
+
+  // ================= DRAG RANKING =================
+  const handleDragStart = (e, index) => {
+    setDraggedItemIndex(index);
+    e.dataTransfer.effectAllowed = "move";
+  };
+
+  const handleDragEnter = (e, targetIndex) => {
+    if (draggedItemIndex === null) return;
+
+    if (draggedItemIndex !== targetIndex) {
+      setRanking((prev) => {
+        const arr = [...prev];
+        const item = arr[draggedItemIndex];
+        arr.splice(draggedItemIndex, 1);
+        arr.splice(targetIndex, 0, item);
+        setDraggedItemIndex(targetIndex);
+        return arr;
+      });
+    }
+  };
+
+  const handleDragEnd = () => {
+    setDraggedItemIndex(null);
+  };
+
+  const handleDragOver = (e) => e.preventDefault();
+
+  // ================= TOKEN POSITION =================
+  const getTokenPosition = (district, index) => {
+    if (!district?.slots?.length) return { x: 0.5, y: 0.5 };
+
+    // không loop random nữa → giữ ổn định layout
+    return district.slots[index] || district.slots[district.slots.length - 1];
+  };
+
+  // ================= RENDER RANK =================
   const renderColorRanking = () => {
-    const colors = {
-      0: "bg-red-600",
-      1: "bg-fuchsia-600",
-      2: "bg-emerald-600",
-      3: "bg-amber-500",
+    const tokenImages = {
+      0: bloodToken,
+      1: coffinToken,
+      2: candleToken,
+      3: crossToken,
     };
+
     return (
-      <div className="flex items-center gap-3 bg-black/40 px-6 py-2 border border-white/10 text-xs font-bold uppercase tracking-widest text-white/50">
-        <span>Sức mạnh:</span>
-        {mockGameState.colorRanking.map((colorKey, index) => (
-          <div key={index} className="flex items-center gap-2">
+      <div className="flex flex-col items-center justify-center gap-3 md:gap-4 h-auto py-8 px-3 bg-black/40 backdrop-blur-md rounded-full border border-white/5 shadow-[-5px_0_20px_rgba(0,0,0,0.5)]">
+        {ranking.map((colorKey, index) => (
+          <React.Fragment key={colorKey}>
             <div
-              className={`w-3 h-3 rounded-sm ${colors[colorKey]} shadow-[0_0_8px_currentColor]`}
-            />
-            {index < 3 && <span>&gt;</span>}
-          </div>
+              draggable
+              onDragStart={(e) => handleDragStart(e, index)}
+              onDragEnter={(e) => handleDragEnter(e, index)}
+              onDragEnd={handleDragEnd}
+              onDragOver={handleDragOver}
+              className={`w-14 h-14 md:w-20 md:h-20 rounded-full overflow-hidden border border-white/20 shadow-[0_3px_10px_rgba(0,0,0,0.8)] transition-transform cursor-grab active:cursor-grabbing flex items-center justify-center p-2
+              ${
+                draggedItemIndex === index
+                  ? "opacity-50 scale-95 border-game-dracula-orange border-2"
+                  : "hover:scale-105 bg-white/5"
+              }`}
+            >
+              <img
+                src={tokenImages[colorKey]}
+                alt=""
+                className="w-full h-full object-contain pointer-events-none"
+              />
+            </div>
+
+            {index < 3 && (
+              <div className="text-white/30">
+                <svg width="24" height="14" viewBox="0 0 24 16">
+                  <polyline points="4,4 12,12 20,4" />
+                </svg>
+              </div>
+            )}
+          </React.Fragment>
         ))}
       </div>
     );
   };
 
+  // ================= RENDER =================
   return (
-    <div className="flex flex-col h-full justify-between items-center w-full max-w-5xl mx-auto gap-4 py-4">
-      {/* THANH THÔNG TIN ĐỐI THỦ (Top) */}
-      <div className="w-full flex justify-between items-end px-4 border-b border-white/10 pb-2">
-        <div className="flex flex-col">
+    <div className="flex flex-col h-full justify-center items-center w-full max-w-6xl mx-auto gap-6 py-4 select-none px-2">
+      {/* TOP INFO */}
+      <div className="w-full flex justify-between items-end px-2 md:px-0">
+        <div>
           <span className="text-[10px] text-game-vanhelsing-blood uppercase tracking-[0.3em] font-bold">
             Kẻ Thù
           </span>
-          <span className="text-xl font-['Playfair_Display'] uppercase tracking-widest text-white/80">
-            {opponent.username}
-          </span>
+          <div className="text-lg text-white/80">{opponent.username}</div>
         </div>
-        <div className="text-right">
-          <span className="text-3xl font-black text-game-bone-white font-['Playfair_Display']">
-            {opponent.health}
-          </span>
-          <span className="text-[10px] uppercase text-white/40 ml-1 tracking-widest">
-            HP
-          </span>
+        <div className="text-2xl font-black text-white">{opponent.health}</div>
+      </div>
+
+      <div className="flex w-full gap-4 md:gap-8 items-center">
+        <div className="flex-1 flex flex-col gap-6">
+          {/* OPPONENT HAND */}
+          <div className="grid grid-cols-5 gap-3 md:gap-4">
+            {opponent.hand.map((card, i) => (
+              <Card key={i} isHidden className="rotate-180" />
+            ))}
+          </div>
+
+          {/* BOARD */}
+          <div
+            className="w-full relative rounded-md overflow-hidden"
+            style={{ aspectRatio: "1536 / 1024" }}
+          >
+            <img
+              src={boardBg}
+              alt=""
+              className="absolute inset-0 w-full h-full object-contain pointer-events-none"
+            />
+
+            {/* TOKENS */}
+            {mockGameState.zones.map((zone) => {
+              const district = districts.find((d) => d.id === zone.zoneIndex);
+              if (!district) return null;
+
+              const humans = Array(zone.humanTokens).fill("human");
+              const vampires = Array(zone.vampireTokens).fill("vampire");
+
+              const tokens = [...humans, ...vampires];
+
+              return tokens.map((type, i) => {
+                const pos = getTokenPosition(district, i);
+
+                return (
+                  <div
+                    key={`${zone.zoneIndex}-${i}`}
+                    className="absolute"
+                    style={{
+                      left: `${pos.x * 100}%`,
+                      top: `${pos.y * 100}%`,
+                      transform: "translate(-50%, -50%)",
+                    }}
+                  >
+                    <div
+                      className={`w-10 h-10 md:w-12 md:h-12 rounded-full border-[3px]
+                        ${
+                          type === "human"
+                            ? "bg-[#d2c4b3] border-white"
+                            : "bg-[#9a1b1f] border-[#e15525] shadow-[0_0_10px_rgba(225,85,37,0.8)]"
+                        }`}
+                    />
+                  </div>
+                );
+              });
+            })}
+          </div>
+
+          {/* MY HAND */}
+          <div className="grid grid-cols-5 gap-3 md:gap-4">
+            {myPlayer.hand.map((card, i) => (
+              <Card key={i} cardData={card} />
+            ))}
+          </div>
         </div>
+
+        <div className="w-20 md:w-28">{renderColorRanking()}</div>
       </div>
 
-      {/* BÀI CỦA ĐỐI THỦ (Grid 5 cột dóng thẳng Board) */}
-      <div className="w-full grid grid-cols-5 gap-3 md:gap-6 px-4">
-        {opponent.hand.map((card, i) => (
-          <Card
-            key={`opp-card-${i}`}
-            isHidden={!card.isRevealed}
-            className="rotate-180"
-          />
-        ))}
-      </div>
-
-      {/* BẢNG ƯU TIÊN MÀU SẮC (Color Ranking) */}
-      <div className="w-full flex justify-center my-2">
-        {renderColorRanking()}
-      </div>
-
-      {/* BÀN CỜ CHÍNH (Grid 5 cột) */}
-      <div className="w-full grid grid-cols-5 gap-3 md:gap-6 px-4">
-        {mockGameState.zones.map((zone) => (
-          <BoardZone key={`zone-${zone.zoneIndex}`} zone={zone} />
-        ))}
-      </div>
-
-      {/* BÀI CỦA MÌNH (Grid 5 cột) */}
-      <div className="w-full grid grid-cols-5 gap-3 md:gap-6 px-4 mt-2">
-        {myPlayer.hand.map((card, i) => (
-          <Card
-            key={`my-card-${i}`}
-            cardData={card}
-            isHidden={card.isRevealed}
-          />
-        ))}
-      </div>
-
-      {/* THANH THÔNG TIN BẢN THÂN (Bottom) */}
-      <div className="w-full flex justify-between items-start px-4 border-t border-white/10 pt-2">
-        <div className="flex flex-col">
-          <span className="text-[10px] text-game-dracula-orange uppercase tracking-[0.3em] font-bold">
-            Lãnh Địa Của Bạn
-          </span>
-          <span className="text-xl font-['Playfair_Display'] uppercase tracking-widest text-white">
-            {myPlayer.username}
-          </span>
-        </div>
-        <div className="text-right">
-          <span className="text-3xl font-black text-game-dracula-orange font-['Playfair_Display']">
-            {myPlayer.health}
-          </span>
-          <span className="text-[10px] uppercase text-game-dracula-orange/60 ml-1 tracking-widest">
-            HP
-          </span>
-        </div>
+      {/* BOTTOM INFO */}
+      <div className="w-full flex justify-between px-2">
+        <div>{myPlayer.username}</div>
+        <div>{myPlayer.health} HP</div>
       </div>
     </div>
   );

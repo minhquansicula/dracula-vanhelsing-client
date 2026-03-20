@@ -1,0 +1,28 @@
+<svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="40%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#26c6da"></stop>
+      <stop offset="100%" stop-color="#00695c"></stop>
+    </radialGradient>
+
+    <radialGradient id="flame">
+      <stop offset="0%" stop-color="#fff59d"></stop>
+      <stop offset="100%" stop-color="#ff6f00"></stop>
+    </radialGradient>
+
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-opacity="0.4"></feDropShadow>
+    </filter>
+  </defs>
+
+  <circle cx="128" cy="128" r="100" fill="url(#bg)" filter="url(#shadow)"></circle>
+
+  <!-- Candle -->
+  <rect x="110" y="105" width="36" height="80" rx="8" fill="#eeeeee"></rect>
+
+  <!-- Wax -->
+  <path d="M110 105 Q128 125 146 105" fill="#e0e0e0"></path>
+
+  <!-- Flame -->
+  <ellipse cx="128" cy="85" rx="14" ry="22" fill="url(#flame)"></ellipse>
+</svg>

@@ -1,0 +1,19 @@
+<svg viewBox="0 0 256 256" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="bg" cx="40%" cy="30%" r="70%">
+      <stop offset="0%" stop-color="#ffd54f"></stop>
+      <stop offset="100%" stop-color="#f57f17"></stop>
+    </radialGradient>
+
+    <filter id="shadow">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-opacity="0.4"></feDropShadow>
+    </filter>
+  </defs>
+
+  <circle cx="128" cy="128" r="100" fill="url(#bg)" filter="url(#shadow)"></circle>
+
+  <g fill="#c62828" stroke="#ffcc80" stroke-width="6">
+    <rect x="112" y="60" width="32" height="140" rx="6"></rect>
+    <rect x="70" y="110" width="116" height="32" rx="6"></rect>
+  </g>
+</svg>
