@@ -31,6 +31,10 @@ const useGameStore = create((set, get) => ({
       // Có thể thêm thông báo đối thủ đã chọn xong
     });
 
+    newConnection.on("GameStateUpdated", (state) => {
+      set({ gameState: state, error: null });
+    });
+
     newConnection.on("GameStarted", (state) => {
       set({ gameState: state, error: null });
     });
@@ -71,6 +75,20 @@ const useGameStore = create((set, get) => ({
     const { connection } = get();
     if (connection) {
       await connection.invoke("SelectRole", code, requestedFaction);
+    }
+  },
+
+  drawCard: async (code) => {
+    const { connection } = get();
+    if (connection) {
+      await connection.invoke("DrawCard", code);
+    }
+  },
+
+  playCard: async (code, discardedCardId) => {
+    const { connection } = get();
+    if (connection) {
+      await connection.invoke("PlayCard", code, discardedCardId);
     }
   },
 

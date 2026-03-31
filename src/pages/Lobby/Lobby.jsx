@@ -4,6 +4,7 @@ import { AuthContext } from "../../contexts/AuthContext";
 import { ROUTES } from "../../constants/routes";
 import useGameStore from "../../store/useGameStore";
 import RoomCodeInput from "../../components/ui/RoomCodeInput";
+import { preloadGameAssets } from "../../utils/assetLoader";
 
 const Lobby = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -23,6 +24,10 @@ const Lobby = () => {
       connect(token);
     }
   }, [user, connect]);
+
+  useEffect(() => {
+    preloadGameAssets();
+  }, []);
 
   // 2. LẮNG NGHE KHI BACKEND TRẢ VỀ ROOM CODE (TẠO/VÀO PHÒNG THÀNH CÔNG)
   useEffect(() => {

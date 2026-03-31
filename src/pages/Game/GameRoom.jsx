@@ -1,4 +1,3 @@
-// src/pages/Game/GameRoom.jsx
 import React, { useState, useEffect, useContext } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { AuthContext } from "../../contexts/AuthContext";
@@ -57,7 +56,13 @@ const GameRoom = () => {
         <p className="text-center italic bg-game-vanhelsing-blood/20 p-4 border border-game-vanhelsing-blood rounded-sm mb-6">
           {error}
         </p>
-        <Button variant="cold" onClick={() => navigate(ROUTES.LOBBY)}>
+        <Button
+          onClick={() => {
+            resetGame();
+            navigate(ROUTES.LOBBY);
+          }}
+          variant="cold"
+        >
           Quay lại Sảnh
         </Button>
       </div>
@@ -65,7 +70,7 @@ const GameRoom = () => {
   }
 
   const myPlayer = gameState?.players?.find(
-    (p) => p.userId === (user?.id || "me"),
+    (p) => p.userId.toLowerCase() === user?.id?.toLowerCase(),
   );
   const isDracula = myPlayer?.faction === FACTION.DRACULA;
 
@@ -93,6 +98,8 @@ const GameRoom = () => {
       );
     }
     if (isActualPlaying || isFinished) {
+      // Vì ảnh đã nằm sẵn trong RAM từ lúc ở sảnh, ta render luôn GameBoard
+      // Không cần bước chờ loading nữa, game sẽ mượt mà ngay lập tức.
       return (
         <div className="flex-grow w-full h-full animate-in fade-in slide-in-from-bottom-10 duration-1000 relative">
           <GameBoard />
@@ -109,13 +116,15 @@ const GameRoom = () => {
         <div className="absolute inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center animate-in fade-in duration-500">
           <div className="bg-[#0d1316] border border-white/10 p-12 flex flex-col items-center text-center shadow-[0_0_100px_rgba(0,0,0,1)] rounded-sm">
             <h2
-              className={`text-5xl md:text-7xl font-black uppercase mb-6 font-['Playfair_Display'] ${gameState.winnerId === user.id ? "text-game-dracula-orange drop-shadow-[0_0_20px_rgba(225,85,37,0.5)]" : "text-game-vanhelsing-blood drop-shadow-[0_0_20px_rgba(154,27,31,0.5)]"}`}
+              className={`text-5xl md:text-7xl font-black uppercase mb-6 font-['Playfair_Display'] ${gameState.winnerId.toLowerCase() === user.id.toLowerCase() ? "text-game-dracula-orange drop-shadow-[0_0_20px_rgba(225,85,37,0.5)]" : "text-game-vanhelsing-blood drop-shadow-[0_0_20px_rgba(154,27,31,0.5)]"}`}
             >
-              {gameState.winnerId === user.id ? "Chiến Thắng" : "Thất Bại"}
+              {gameState.winnerId.toLowerCase() === user.id.toLowerCase()
+                ? "Chiến Thắng"
+                : "Thất Bại"}
             </h2>
             <p className="text-white/60 mb-10 uppercase tracking-[0.3em] text-xs font-bold">
               {gameState.endReason === "Surrender"
-                ? gameState.winnerId === user.id
+                ? gameState.winnerId.toLowerCase() === user.id.toLowerCase()
                   ? "Đối thủ đã hèn nhát bỏ cuộc."
                   : "Bạn đã đầu hàng trước nỗi sợ."
                 : "Hiệp ước đã kết thúc."}
@@ -126,7 +135,9 @@ const GameRoom = () => {
                 navigate(ROUTES.LOBBY);
               }}
               variant={
-                gameState.winnerId === user.id ? "dracula" : "vanhelsing"
+                gameState.winnerId.toLowerCase() === user.id.toLowerCase()
+                  ? "dracula"
+                  : "vanhelsing"
               }
             >
               Trở Về Sảnh Chờ
@@ -198,7 +209,7 @@ const GameRoom = () => {
               <button
                 onClick={() => {
                   setIsSettingsOpen(false);
-                  resetGame(); // Bổ sung dòng này
+                  resetGame();
                   navigate(ROUTES.LOBBY);
                 }}
                 className="w-full text-left px-4 py-3 text-xs uppercase tracking-widest text-white/70 hover:bg-white/5 hover:text-white transition-colors"
