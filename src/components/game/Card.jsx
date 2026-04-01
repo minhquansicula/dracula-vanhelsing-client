@@ -13,8 +13,8 @@ const Card = ({ cardData, isHidden, className = "" }) => {
     ? import.meta.env.BASE_URL
     : process.env.PUBLIC_URL || "";
 
-  // Container đảm bảo tràn viền và bo góc nhẹ
-  const containerClass = `relative w-full h-full rounded-lg overflow-hidden shadow-2xl border border-white/5 ${className}`;
+  // Thêm viền màu vàng đồng/cam tối cho hợp phong cách Gothic
+  const containerClass = `relative w-full h-full rounded-lg overflow-hidden shadow-[0_10px_20px_rgba(0,0,0,0.8)] border-2 border-[#b8860b]/30 ${className}`;
 
   if (isHidden || !cardData) {
     return (
@@ -22,8 +22,8 @@ const Card = ({ cardData, isHidden, className = "" }) => {
         <img
           src={`${basePath}images/cards/card_back.png`}
           alt="Card Back"
-          // object-cover giúp ảnh lấp đầy toàn bộ div mà không bị biến dạng
-          className="absolute inset-0 w-full h-full object-cover pointer-events-none block"
+          // Zoom 18% để ép viền đen thừa ra ngoài
+          className="absolute inset-0 w-full h-full object-cover pointer-events-none block scale-[1.18]"
         />
       </div>
     );
@@ -42,30 +42,30 @@ const Card = ({ cardData, isHidden, className = "" }) => {
 
   return (
     <div className={containerClass}>
-      {/* ẢNH THẺ BÀI: Ép to lên bằng đúng 100% kích thước của DIV */}
+      {/* ẢNH THẺ BÀI */}
       <img
         src={imagePath}
         alt={`Card ${color}-${value}`}
-        // object-cover: Đảm bảo ảnh luôn lấp đầy div, xóa bỏ mọi khoảng trống
-        // w-full h-full: Ép chiều rộng và chiều cao khớp tuyệt đối với div cha
-        className="absolute inset-0 w-full h-full object-cover pointer-events-none block"
+        // THÊM scale-[1.18] TẠI ĐÂY: Phóng to ảnh để cắt bỏ phần viền đen có sẵn trong file PNG
+        className="absolute inset-0 w-full h-full object-cover pointer-events-none block scale-[1.18]"
         onError={(e) => {
           e.target.style.display = "none";
         }}
       />
 
-      {/* LỚP PHỦ GRADIENT GÓC: Giúp số dễ đọc hơn */}
-      <div className="absolute top-0 left-0 w-1/2 h-1/2 bg-gradient-to-br from-black/80 via-black/20 to-transparent z-[5] pointer-events-none"></div>
+      {/* LỚP PHỦ GRADIENT GÓC: Chuyển sang đỏ đen cho đúng chất Dracula */}
+      <div className="absolute top-0 left-0 w-2/3 h-1/2 bg-gradient-to-br from-black/90 via-black/40 to-transparent z-[5] pointer-events-none"></div>
 
-      {/* SỐ THẺ BÀI: Nằm trực tiếp bên trong layout ảnh */}
-      <div className="absolute top-2 left-4 z-10 select-none">
-        <span className="text-white text-2xl xl:text-4xl font-black font-['Playfair_Display'] italic tracking-tighter drop-shadow-[0_4px_8px_rgba(0,0,0,1)]">
+      {/* SỐ THẺ BÀI: Sử dụng Font Gothic cổ điển */}
+      <div className="absolute top-1 left-3 xl:top-2 xl:left-4 z-10 select-none">
+        {/* Áp dụng font UnifrakturMaguntia, tăng kích thước chữ, đổ bóng đỏ/đen */}
+        <span className="text-[#f4e4bc] text-3xl xl:text-5xl font-normal font-['UnifrakturMaguntia',_serif] tracking-tighter drop-shadow-[2px_2px_4px_rgba(0,0,0,1)]">
           {value}
         </span>
       </div>
 
-      {/* Hiệu ứng viền sáng nhẹ bên trong để thẻ bài trông cao cấp hơn */}
-      <div className="absolute inset-0 border border-white/10 rounded-lg pointer-events-none z-20"></div>
+      {/* Hiệu ứng viền sáng nhẹ bên trong (Inner Glow) */}
+      <div className="absolute inset-0 shadow-[inset_0_0_15px_rgba(0,0,0,0.8)] rounded-lg pointer-events-none z-20"></div>
     </div>
   );
 };

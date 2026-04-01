@@ -19,34 +19,23 @@ const useGameStore = create((set, get) => ({
       .withAutomaticReconnect()
       .build();
 
-    newConnection.on("RoomCreated", (roomCode) => {
-      set({ roomCode: roomCode, error: null });
-    });
-
-    newConnection.on("RoomReadyToSelectRole", (state) => {
-      set({ gameState: state, roomCode: state.roomCode, error: null });
-    });
-
-    newConnection.on("OpponentSelectedRole", () => {
-      // Có thể thêm thông báo đối thủ đã chọn xong
-    });
-
-    newConnection.on("GameStateUpdated", (state) => {
-      set({ gameState: state, error: null });
-    });
-
-    newConnection.on("GameStarted", (state) => {
-      set({ gameState: state, error: null });
-    });
-
-    // Lắng nghe sự kiện kết thúc game (Đầu hàng, Thắng/Thua thông thường)
-    newConnection.on("GameEnded", (state) => {
-      set({ gameState: state });
-    });
-
-    newConnection.on("Error", (message) => {
-      set({ error: message });
-    });
+    newConnection.on("RoomCreated", (roomCode) =>
+      set({ roomCode: roomCode, error: null }),
+    );
+    newConnection.on("RoomReadyToSelectRole", (state) =>
+      set({ gameState: state, roomCode: state.roomCode, error: null }),
+    );
+    newConnection.on("OpponentSelectedRole", () =>
+      console.log("[SignalR] OpponentSelectedRole"),
+    );
+    newConnection.on("GameStateUpdated", (state) =>
+      set({ gameState: state, error: null }),
+    );
+    newConnection.on("GameStarted", (state) =>
+      set({ gameState: state, error: null }),
+    );
+    newConnection.on("GameEnded", (state) => set({ gameState: state }));
+    newConnection.on("Error", (message) => set({ error: message }));
 
     try {
       await newConnection.start();
@@ -58,44 +47,50 @@ const useGameStore = create((set, get) => ({
   },
 
   createRoom: async () => {
-    const { connection } = get();
-    if (connection) {
-      await connection.invoke("CreateRoom");
+    try {
+      await get().connection?.invoke("CreateRoom");
+    } catch (error) {
+      set({ error: "Không thể tạo phòng." });
     }
   },
 
   joinRoom: async (code) => {
-    const { connection } = get();
-    if (connection) {
-      await connection.invoke("JoinRoom", code);
+    try {
+      await get().connection?.invoke("JoinRoom", code);
+    } catch (error) {
+      set({ error: "Không thể vào phòng." });
     }
   },
 
   selectRole: async (code, requestedFaction) => {
-    const { connection } = get();
-    if (connection) {
-      await connection.invoke("SelectRole", code, requestedFaction);
+    try {
+      await get().connection?.invoke("SelectRole", code, requestedFaction);
+    } catch (error) {
+      set({ error: "Lỗi khi chọn vai trò." });
     }
   },
 
   drawCard: async (code) => {
-    const { connection } = get();
-    if (connection) {
-      await connection.invoke("DrawCard", code);
+    try {
+      await get().connection?.invoke("DrawCard", code);
+    } catch (error) {
+      set({ error: "Không thể rút bài." });
     }
   },
 
   playCard: async (code, discardedCardId) => {
-    const { connection } = get();
-    if (connection) {
-      await connection.invoke("PlayCard", code, discardedCardId);
+    try {
+      await get().connection?.invoke("PlayCard", code, discardedCardId);
+    } catch (error) {
+      set({ error: "Không thể đánh bài." });
     }
   },
 
   surrender: async (code) => {
-    const { connection } = get();
-    if (connection) {
-      await connection.invoke("Surrender", code);
+    try {
+      await get().connection?.invoke("Surrender", code);
+    } catch (error) {
+      set({ error: "Lỗi khi đầu hàng." });
     }
   },
 

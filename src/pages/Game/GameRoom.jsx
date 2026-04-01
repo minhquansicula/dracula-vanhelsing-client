@@ -5,7 +5,6 @@ import Button from "../../components/ui/Button";
 import { ROUTES } from "../../constants/routes";
 import useGameStore from "../../store/useGameStore";
 
-// Components
 import GameBoard from "../../components/game/GameBoard";
 import WaitingPhase from "../../components/game/phases/WaitingPhase";
 import RoleSelectionPhase from "../../components/game/phases/RoleSelectionPhase";
@@ -73,8 +72,9 @@ const GameRoom = () => {
     (p) => p.userId.toLowerCase() === user?.id?.toLowerCase(),
   );
   const isDracula = myPlayer?.faction === FACTION.DRACULA;
+  const isMyTurn =
+    gameState?.currentTurnUserId?.toLowerCase() === user?.id?.toLowerCase();
 
-  // Controller Logic for Phases
   const isWaiting =
     !gameState ||
     (gameState.status === ROOM_STATUS.WAITING && gameState.players?.length < 2);
@@ -85,9 +85,7 @@ const GameRoom = () => {
   const isFinished = gameState?.status === ROOM_STATUS.FINISHED;
 
   const renderCurrentPhase = () => {
-    if (isWaiting) {
-      return <WaitingPhase roomCode={roomCode} />;
-    }
+    if (isWaiting) return <WaitingPhase roomCode={roomCode} />;
     if (isSelectingRole) {
       return (
         <RoleSelectionPhase
@@ -98,8 +96,6 @@ const GameRoom = () => {
       );
     }
     if (isActualPlaying || isFinished) {
-      // Vì ảnh đã nằm sẵn trong RAM từ lúc ở sảnh, ta render luôn GameBoard
-      // Không cần bước chờ loading nữa, game sẽ mượt mà ngay lập tức.
       return (
         <div className="flex-grow w-full h-full animate-in fade-in slide-in-from-bottom-10 duration-1000 relative">
           <GameBoard />
@@ -111,7 +107,6 @@ const GameRoom = () => {
 
   return (
     <div className="min-h-screen bg-game-dark-teal text-game-bone-white relative overflow-hidden flex flex-col font-['Inter'] selection:bg-game-dracula-orange/30">
-      {/* Overlay Kết thúc Game */}
       {isFinished && (
         <div className="absolute inset-0 z-[100] bg-black/80 backdrop-blur-md flex items-center justify-center animate-in fade-in duration-500">
           <div className="bg-[#0d1316] border border-white/10 p-12 flex flex-col items-center text-center shadow-[0_0_100px_rgba(0,0,0,1)] rounded-sm">
@@ -146,17 +141,14 @@ const GameRoom = () => {
         </div>
       )}
 
-      {/* Background decoration */}
       <div className="absolute inset-0 pointer-events-none z-0">
         <div className="absolute -bottom-40 -left-40 w-[50vw] h-[50vw] bg-game-vanhelsing-blood rounded-full blur-[200px] opacity-10"></div>
         <div className="absolute -top-40 -right-40 w-[50vw] h-[50vw] bg-game-dracula-orange rounded-full blur-[200px] opacity-10"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle,_transparent_10%,_rgba(0,0,0,0.7)_100%)]"></div>
       </div>
 
-      {/* Header */}
       <header className="p-6 md:px-10 border-b border-white/5 relative z-20 flex items-center justify-between backdrop-blur-md bg-black/20">
-        {/* TRÁI: Thông tin Round / Trạng thái */}
-        <div className="flex items-center gap-6">
+        <div className="flex items-center gap-6 w-1/3">
           <div className="bg-black/40 px-4 py-2 border border-white/5 text-[10px] uppercase tracking-[0.3em] text-game-bone-white/80 font-bold min-w-[180px] text-center">
             {isWaiting && "Đang chờ đối thủ..."}
             {isSelectingRole && "Nghi lễ chọn phe..."}
@@ -164,7 +156,7 @@ const GameRoom = () => {
               `Vòng ${gameState.roundNumber} - Phe ${isDracula ? "Đêm Tối" : "Thợ Săn"}`}
           </div>
           <div className="h-4 w-px bg-white/10 hidden sm:block" />
-          <h2 className="text-xl font-black text-game-bone-white uppercase tracking-widest shadow-text-md font-['Playfair_Display'] hidden sm:block">
+          <h2 className="text-xl font-black text-game-bone-white uppercase tracking-widest shadow-text-md font-['Playfair_Display'] hidden xl:block whitespace-nowrap">
             Hiệp Ước:{" "}
             <span className="text-game-dracula-orange tracking-[0.3em] ml-2">
               {roomCode}
@@ -172,8 +164,24 @@ const GameRoom = () => {
           </h2>
         </div>
 
-        {/* PHẢI: Nút Settings */}
-        <div className="relative">
+        {/* TRUNG TÂM: Thông báo lượt chơi */}
+        <div className="flex-1 flex justify-center">
+          {isActualPlaying && (
+            <div className="pointer-events-none">
+              {isMyTurn ? (
+                <div className="bg-[#0a0f12]/90 border border-game-dracula-orange/60 text-game-dracula-orange px-6 py-1.5 xl:px-8 xl:py-2 rounded-full text-[10px] xl:text-xs font-black uppercase tracking-[0.25em] shadow-[0_0_15px_rgba(225,85,37,0.4)] animate-pulse">
+                  Lượt của bạn
+                </div>
+              ) : (
+                <div className="bg-[#0a0f12]/80 border border-white/10 text-white/40 px-6 py-1.5 xl:px-8 xl:py-2 rounded-full text-[10px] xl:text-xs font-bold uppercase tracking-[0.2em]">
+                  Đối thủ đang suy nghĩ...
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+
+        <div className="relative flex justify-end w-1/3">
           <button
             onClick={() => setIsSettingsOpen(!isSettingsOpen)}
             className="p-2 text-white/40 hover:text-white hover:rotate-90 transition-all duration-300 outline-none"
@@ -200,7 +208,7 @@ const GameRoom = () => {
           </button>
 
           {isSettingsOpen && (
-            <div className="absolute right-0 mt-4 w-56 bg-[#0d1316]/95 backdrop-blur-md border border-white/10 rounded-sm shadow-[0_10px_40px_rgba(0,0,0,0.8)] overflow-hidden z-50">
+            <div className="absolute top-full mt-4 right-0 w-56 bg-[#0d1316]/95 backdrop-blur-md border border-white/10 rounded-sm shadow-[0_10px_40px_rgba(0,0,0,0.8)] overflow-hidden z-50">
               <div className="px-4 py-3 border-b border-white/5">
                 <p className="text-[10px] text-white/40 uppercase tracking-[0.2em]">
                   Tùy chỉnh
@@ -230,7 +238,6 @@ const GameRoom = () => {
         </div>
       </header>
 
-      {/* Main Content Area */}
       <main className="flex-grow p-6 md:p-10 relative z-10 flex flex-col">
         <div className="max-w-7xl mx-auto h-full w-full flex-grow flex flex-col">
           {renderCurrentPhase()}

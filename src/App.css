@@ -1,3 +1,38 @@
+@import url("https://fonts.googleapis.com/css2?family=UnifrakturMaguntia&display=swap");
+
+/* Quỹ đạo rút bài: Bay từ Trái (Bộ bài) sang Phải (Tay người chơi) */
+@keyframes card-draw {
+  0% {
+    transform: translate(-800px, -100px) rotate(-180deg) scale(0.5);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Quỹ đạo vứt bài: Bay từ Phải (Tay người chơi) sang Trái (Mộ bài) */
+@keyframes card-discard {
+  0% {
+    transform: translate(800px, 100px) rotate(180deg) scale(1.5);
+    opacity: 0;
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg) scale(1);
+    opacity: 1;
+  }
+}
+
+/* Class tiện ích để gọi trong Tailwind */
+.animate-card-draw {
+  animation: card-draw 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
+.animate-card-discard {
+  animation: card-discard 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+}
+
 .counter {
   font-size: 16px;
   padding: 5px 10px;
@@ -167,7 +202,7 @@
 
   &::before,
   &::after {
-    content: '';
+    content: "";
     position: absolute;
     top: -4.5px;
     border: 5px solid transparent;

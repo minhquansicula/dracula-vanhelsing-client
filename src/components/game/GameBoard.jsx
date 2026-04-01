@@ -1,14 +1,12 @@
-// src/components/game/GameBoard.jsx
 import React, { useState, useContext } from "react";
 import { useParams } from "react-router-dom";
 import MapTokens from "./MapTokens";
 import ColorRankingBoard from "./ColorRankingBoard";
 import PlayerHand from "./PlayerHand";
 import DeckAndDiscard from "./DeckAndDiscard";
-import Card from "./Card";
 
 import boardBg from "../../assets/images/board-bg.png";
-import { districts } from "../../components/game/bonus/mapConfig";
+import { districts } from "./bonus/mapConfig";
 import { AuthContext } from "../../contexts/AuthContext";
 import useGameStore from "../../store/useGameStore";
 
@@ -54,8 +52,7 @@ const GameBoard = () => {
 
   return (
     <div className="fixed inset-0 pt-24 pb-8 w-full h-full bg-[#0a0f12] flex items-center justify-center font-['Inter'] px-8 select-none overflow-y-auto box-border perspective-1000">
-      <div className="w-full max-w-[1600px] flex flex-row items-center justify-center gap-8 xl:gap-12 h-full max-h-[900px]">
-        {/* LEFT COLUMN: Deck & Discard */}
+      <div className="w-full max-w-[1600px] flex flex-row items-center justify-center gap-8 xl:gap-12 h-full max-h-[900px] relative">
         <div className="shrink-0 flex flex-col justify-center gap-8 xl:gap-12 relative">
           <DeckAndDiscard
             drawPileCount={gameState.drawPile.length}
@@ -65,15 +62,12 @@ const GameBoard = () => {
                 : null
             }
             onDraw={handleDrawCard}
-            onDiscard={() => {}}
             isMyTurn={isMyTurn}
             hasDrawnCard={hasDrawnCard}
           />
         </div>
 
-        {/* MIDDLE COLUMN: Players & Board */}
-        <div className="flex flex-col items-center justify-center gap-4 xl:gap-8 flex-1 max-w-[900px] relative">
-          {/* OPPONENT ROW */}
+        <div className="flex flex-col items-center justify-center gap-6 xl:gap-8 flex-1 max-w-[900px] relative">
           <PlayerHand
             player={opponent}
             type="opponent"
@@ -85,7 +79,6 @@ const GameBoard = () => {
             onPlayCard={() => {}}
           />
 
-          {/* BOARD CONTAINER */}
           <div
             className={`w-full relative shadow-[0_20px_80px_rgba(0,0,0,0.9)] rounded-xl overflow-hidden border border-[#232a30] bg-[#05080a] ${smoothTransition}`}
           >
@@ -133,7 +126,6 @@ const GameBoard = () => {
             </div>
           </div>
 
-          {/* MY PLAYER ROW */}
           <PlayerHand
             player={myPlayer}
             type="self"
@@ -141,18 +133,15 @@ const GameBoard = () => {
             setHoveredDistrict={setHoveredDistrict}
             isMyTurn={isMyTurn}
             hasDrawnCard={hasDrawnCard}
-            drawnCard={myPlayer?.drawnCard} // Truyền lá bài rút xuống cho PlayerHand
+            drawnCard={myPlayer?.drawnCard}
             onPlayCard={handlePlayCard}
           />
         </div>
 
-        {/* RIGHT COLUMN: Color Ranking */}
         <div className="shrink-0 flex flex-col justify-center gap-8 xl:gap-12">
           <ColorRankingBoard
             initialRanking={gameState.colorRanking}
-            onRankingChange={(newRanking) => {
-              // Logic xử lý lá bài Kỹ năng 7
-            }}
+            onRankingChange={(newRanking) => {}}
           />
         </div>
       </div>

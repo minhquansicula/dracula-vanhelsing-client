@@ -2,6 +2,7 @@
 import React from "react";
 import Card from "./Card";
 import PlayerStatusWidget from "./PlayerStatusWidget";
+import { motion, AnimatePresence } from "framer-motion";
 
 const smoothTransition =
   "transition-[transform,opacity,filter,box-shadow] duration-400 ease-[cubic-bezier(0.25,1,0.5,1)] transform-gpu";
@@ -76,28 +77,56 @@ const PlayerHand = ({
 
       {/* Vị trí lá bài thứ 6 (Lá bài vừa rút) */}
       {isSelf && (
-        <div className="absolute top-1/2 -translate-y-1/2 left-[100%] ml-8 xl:ml-12 z-20 flex items-center pr-4">
-          <div className="relative group/drawn flex-col flex items-center">
-            {/* Tiêu đề slot */}
-            <div
-              className={`absolute -top-7 whitespace-nowrap text-[9px] xl:text-[11px] uppercase font-bold tracking-widest transition-colors duration-300 ${hasDrawnCard ? "text-game-dracula-orange drop-shadow-[0_0_8px_rgba(225,85,37,0.8)]" : "text-white/30"}`}
-            >
-              {hasDrawnCard ? "Lá Bài Rút" : "Slot Trống"}
-            </div>
+        <div className="absolute top-1/2 -translate-y-1/2 left-[100%] ml-8 xl:ml-12 z-20 flex flex-col items-center pr-4">
+          <div
+            className={`absolute -top-6 whitespace-nowrap text-[9px] xl:text-[11px] uppercase font-bold tracking-widest transition-colors duration-300 ${hasDrawnCard ? "text-game-dracula-orange drop-shadow-[0_0_8px_rgba(225,85,37,0.8)]" : "text-white/30"}`}
+          >
+            {hasDrawnCard ? "Lá Bài Rút" : "Slot Trống"}
+          </div>
 
-            <div
-              // CẬP NHẬT KÍCH THƯỚC: w-28 xl:w-40 cho đồng bộ
-              className={`w-28 xl:w-40 aspect-[2/3] shrink-0 origin-bottom rounded-md transition-all duration-400 ease-[cubic-bezier(0.25,1,0.5,1)] transform-gpu
-                ${
-                  hasDrawnCard
-                    ? "cursor-pointer border border-game-dracula-orange shadow-[0_10px_30px_rgba(225,85,37,0.3)] hover:-translate-y-8 hover:scale-110 hover:shadow-[0_15px_40px_rgba(225,85,37,0.6)] z-30"
-                    : "border-2 border-dashed border-white/10 opacity-40 flex items-center justify-center bg-black/10"
-                }
-              `}
-              onClick={() => hasDrawnCard && onPlayCard(drawnCard.cardId)}
-            >
+          <div
+            className={`w-28 xl:w-40 aspect-[2/3] shrink-0 origin-bottom rounded-md transition-all duration-400 ease-[cubic-bezier(0.25,1,0.5,1)] transform-gpu perspective-1000
+               ${
+                 hasDrawnCard
+                   ? "cursor-pointer border border-game-dracula-orange shadow-[0_10px_30px_rgba(225,85,37,0.3)] hover:-translate-y-8 hover:scale-110 hover:shadow-[0_15px_40px_rgba(225,85,37,0.6)] z-30"
+                   : "border-2 border-dashed border-white/10 opacity-40 flex items-center justify-center bg-black/10"
+               }
+             `}
+            onClick={() => hasDrawnCard && onPlayCard(drawnCard.cardId)}
+          >
+            <AnimatePresence mode="wait">
               {hasDrawnCard && drawnCard ? (
-                <Card cardData={drawnCard} className="w-full h-full" />
+                // 3. Thiết lập quỹ đạo bay từ bộ bài vào tay
+                <motion.div
+                  key={`drawn-${drawnCard.cardId}`}
+                  // Xuất phát từ tít bên trái (Bộ bài), lật úp
+                  initial={{
+                    x: -600,
+                    y: -200,
+                    rotateY: -180,
+                    rotateZ: -45,
+                    scale: 0.5,
+                    opacity: 0,
+                  }}
+                  // Bay về đích, lật ngửa lại
+                  animate={{
+                    x: 0,
+                    y: 0,
+                    rotateY: 0,
+                    rotateZ: 0,
+                    scale: 1,
+                    opacity: 1,
+                  }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 220,
+                    damping: 22,
+                    mass: 1,
+                  }}
+                  className="w-full h-full origin-center"
+                >
+                  <Card cardData={drawnCard} className="w-full h-full" />
+                </motion.div>
               ) : (
                 <div className="text-white/20">
                   <svg
@@ -115,14 +144,14 @@ const PlayerHand = ({
                   </svg>
                 </div>
               )}
-            </div>
-
-            {hasDrawnCard && (
-              <div className="absolute -bottom-8 whitespace-nowrap text-[10px] bg-game-vanhelsing-blood text-white px-4 py-1.5 font-bold uppercase tracking-widest opacity-0 group-hover/drawn:opacity-100 transition-opacity duration-300 pointer-events-none rounded-md z-40 shadow-lg">
-                Vứt lá này
-              </div>
-            )}
+            </AnimatePresence>
           </div>
+
+          {hasDrawnCard && (
+            <div className="absolute -bottom-8 whitespace-nowrap text-[10px] bg-game-vanhelsing-blood text-white px-4 py-1.5 font-bold uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none rounded-md z-40 shadow-lg">
+              Vứt lá này
+            </div>
+          )}
         </div>
       )}
     </div>
