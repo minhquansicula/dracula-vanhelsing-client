@@ -1,54 +1,44 @@
 // src/store/useGameStore.js
 import { create } from "zustand";
-import * as signalR from "@microsoft/signalr";
+import { signalrService } from "../services/signalrService";
 
 const useGameStore = create((set, get) => ({
-  connection: null,
   isConnected: false,
   gameState: null,
   error: null,
   roomCode: null,
 
   connect: async (token) => {
-    if (get().connection) return;
-
-    const newConnection = new signalR.HubConnectionBuilder()
-      .withUrl("https://localhost:7295/gamehub", {
-        accessTokenFactory: () => token,
-      })
-      .withAutomaticReconnect()
-      .build();
-
-    newConnection.on("RoomCreated", (roomCode) =>
-      set({ roomCode: roomCode, error: null }),
-    );
-    newConnection.on("RoomReadyToSelectRole", (state) =>
-      set({ gameState: state, roomCode: state.roomCode, error: null }),
-    );
-    newConnection.on("OpponentSelectedRole", () =>
-      console.log("[SignalR] OpponentSelectedRole"),
-    );
-    newConnection.on("GameStateUpdated", (state) =>
-      set({ gameState: state, error: null }),
-    );
-    newConnection.on("GameStarted", (state) =>
-      set({ gameState: state, error: null }),
-    );
-    newConnection.on("GameEnded", (state) => set({ gameState: state }));
-    newConnection.on("Error", (message) => set({ error: message }));
+    if (get().isConnected) return;
 
     try {
-      await newConnection.start();
-      set({ connection: newConnection, isConnected: true });
+      // Truyền các hàm cập nhật state (callbacks) vào service
+      await signalrService.connect(token, {
+        onRoomCreated: (roomCode) => set({ roomCode: roomCode, error: null }),
+        onRoomReadyToSelectRole: (state) =>
+          set({ gameState: state, roomCode: state.roomCode, error: null }),
+        onOpponentSelectedRole: () =>
+          console.log("[GameStore] Đối thủ đã chọn xong phe"),
+        onGameStateUpdated: (state) => set({ gameState: state, error: null }),
+        onGameStarted: (state) => set({ gameState: state, error: null }),
+        onGameEnded: (state) => set({ gameState: state }),
+        onError: (message) => set({ error: message }),
+      });
+
+      set({ isConnected: true });
     } catch (err) {
-      console.error("SignalR Connection Error: ", err);
       set({ error: "Không thể kết nối đến máy chủ trò chơi." });
     }
   },
 
+  disconnect: async () => {
+    await signalrService.disconnect();
+    set({ isConnected: false, gameState: null, roomCode: null, error: null });
+  },
+
   createRoom: async () => {
     try {
-      await get().connection?.invoke("CreateRoom");
+      await signalrService.createRoom();
     } catch (error) {
       set({ error: "Không thể tạo phòng." });
     }
@@ -56,7 +46,7 @@ const useGameStore = create((set, get) => ({
 
   joinRoom: async (code) => {
     try {
-      await get().connection?.invoke("JoinRoom", code);
+      await signalrService.joinRoom(code);
     } catch (error) {
       set({ error: "Không thể vào phòng." });
     }
@@ -64,7 +54,7 @@ const useGameStore = create((set, get) => ({
 
   selectRole: async (code, requestedFaction) => {
     try {
-      await get().connection?.invoke("SelectRole", code, requestedFaction);
+      await signalrService.selectRole(code, requestedFaction);
     } catch (error) {
       set({ error: "Lỗi khi chọn vai trò." });
     }
@@ -72,7 +62,7 @@ const useGameStore = create((set, get) => ({
 
   drawCard: async (code) => {
     try {
-      await get().connection?.invoke("DrawCard", code);
+      await signalrService.drawCard(code);
     } catch (error) {
       set({ error: "Không thể rút bài." });
     }
@@ -80,15 +70,23 @@ const useGameStore = create((set, get) => ({
 
   playCard: async (code, discardedCardId) => {
     try {
-      await get().connection?.invoke("PlayCard", code, discardedCardId);
+      await signalrService.playCard(code, discardedCardId);
     } catch (error) {
       set({ error: "Không thể đánh bài." });
     }
   },
 
+  submitSkillAction: async (code, payload) => {
+    try {
+      await signalrService.submitSkillAction(code, payload);
+    } catch (error) {
+      set({ error: "Lỗi khi dùng kỹ năng." });
+    }
+  },
+
   surrender: async (code) => {
     try {
-      await get().connection?.invoke("Surrender", code);
+      await signalrService.surrender(code);
     } catch (error) {
       set({ error: "Lỗi khi đầu hàng." });
     }
