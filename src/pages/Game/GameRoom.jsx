@@ -17,6 +17,21 @@ import SettingsMenu from "../../components/ui/SettingsMenu";
 const FACTION = { DRACULA: 0, VAN_HELSING: 1 };
 const ROOM_STATUS = { WAITING: 0, PLAYING: 1, FINISHED: 2 };
 
+// HÀM HELPER: Frontend tự so bài để chạy Animation
+const compareCards = (c1Id, c2Id, ranking) => {
+  const color1 = Math.floor((c1Id - 1) / 8);
+  const val1 = ((c1Id - 1) % 8) + 1;
+  const color2 = Math.floor((c2Id - 1) / 8);
+  const val2 = ((c2Id - 1) % 8) + 1;
+
+  const trump = ranking[0];
+  if (color1 === trump && color2 !== trump) return 1;
+  if (color1 !== trump && color2 === trump) return -1;
+  if (val1 > val2) return 1;
+  if (val1 < val2) return -1;
+  return ranking.indexOf(color1) < ranking.indexOf(color2) ? 1 : -1;
+};
+
 const GameRoom = () => {
   const { roomCode } = useParams();
   const { user } = useContext(AuthContext);
@@ -82,16 +97,16 @@ const GameRoom = () => {
     }
 
     const oldState = displayStateRef.current;
-    const isNewRound = gameState.roundNumber > oldState.roundNumber;
-    const isNewlyFinished =
-      gameState.status === ROOM_STATUS.FINISHED &&
-      oldState.status === ROOM_STATUS.PLAYING;
+    
+    // Kiểm tra xem có đang ở pha Review hay không
+    const isReviewPhase = gameState.status === 3 || gameState.status === "CombatReview";
+    const isEnteringReview = isReviewPhase && 
+                             (oldState.status === 1 || oldState.status === "Playing" || oldState.status === ROOM_STATUS.PLAYING);
+    const isNewlyFinished = (gameState.status === ROOM_STATUS.FINISHED || gameState.status === 2) && 
+                            (oldState.status === 1 || oldState.status === "Playing" || oldState.status === ROOM_STATUS.PLAYING);
 
-    if (
-      (isNewRound || isNewlyFinished) &&
-      combatQueue.length === 0 &&
-      currentCombatIndex === -1
-    ) {
+    if ((isEnteringReview || isNewlyFinished) && combatQueue.length === 0 && currentCombatIndex === -1) {
+      
       if (isNewlyFinished && gameState.endReason === "Surrender") {
         setDisplayState(gameState);
         displayStateRef.current = gameState;
@@ -99,20 +114,23 @@ const GameRoom = () => {
       }
 
       const queue = [];
-      let currentDraculaHP = oldState.players.find(
-        (p) => p.faction === FACTION.DRACULA,
-      ).health;
+      let currentDraculaHP = oldState.players.find((p) => p.faction === FACTION.DRACULA).health;
+
+      const dracula = gameState.players.find(p => p.faction === FACTION.DRACULA);
+      const vh = gameState.players.find(p => p.faction === FACTION.VAN_HELSING);
 
       for (let i = 0; i < 5; i++) {
-        const oldZone = oldState.zones[i];
-        const newZone = gameState.zones[i] || oldZone;
-        let draculaWon = newZone.vampireTokens > oldZone.vampireTokens;
+        const dCardId = dracula.hand[i].cardId;
+        const vhCardId = vh.hand[i].cardId;
+
+        const draculaWon = compareCards(dCardId, vhCardId, gameState.colorRanking) > 0;
 
         queue.push({
           districtIndex: i + 1,
           winner: draculaWon ? FACTION.DRACULA : FACTION.VAN_HELSING,
         });
 
+        const oldZone = oldState.zones[i];
         if (draculaWon) {
           if (oldZone.vampireTokens + 1 >= 4) break;
         } else {
@@ -122,18 +140,40 @@ const GameRoom = () => {
       }
 
       const revealedState = JSON.parse(JSON.stringify(oldState));
-      revealedState.players.forEach((p) =>
-        p.hand.forEach((c) => (c.isRevealed = true)),
-      );
+      revealedState.players.forEach((p) => {
+        const actualPlayer = gameState.players.find(gp => gp.userId === p.userId);
+        if (actualPlayer) {
+          p.hand.forEach((c, idx) => {
+            c.isRevealed = true;
+            c.cardId = actualPlayer.hand[idx].cardId; 
+          });
+        }
+      });
       revealedState.pendingSkillValue = null;
+      revealedState.status = gameState.status; 
 
       setDisplayState(revealedState);
       displayStateRef.current = revealedState;
       setCombatQueue(queue);
       setCurrentCombatIndex(0);
+
     } else if (combatQueue.length === 0) {
-      setDisplayState(gameState);
-      displayStateRef.current = gameState;
+      // FIX LỖI: Nếu đang ở màn hình Review, KHÔNG đè lại State cũ để giữ nguyên Bài Ngửa và Máu vừa trừ.
+      if (!isReviewPhase) {
+        setDisplayState(gameState);
+        displayStateRef.current = gameState;
+      } else {
+        // Chỉ cập nhật duy nhất cờ "Đã sẵn sàng" để UI biết đối thủ đã bấm nút Tiếp tục chưa
+        setDisplayState((prev) => {
+          const next = JSON.parse(JSON.stringify(prev));
+          next.players.forEach(p => {
+            const serverPlayer = gameState.players.find(sp => sp.userId === p.userId);
+            if (serverPlayer) p.isReadyForNextRound = serverPlayer.isReadyForNextRound;
+          });
+          displayStateRef.current = next;
+          return next;
+        });
+      }
     }
   }, [gameState]);
 
@@ -145,19 +185,12 @@ const GameRoom = () => {
       setActiveCombatDistrict({ index: step.districtIndex, phase: "focus" });
 
       const timer1 = setTimeout(() => {
-        setActiveCombatDistrict({
-          index: step.districtIndex,
-          phase: "resolve",
-        });
+        setActiveCombatDistrict({ index: step.districtIndex, phase: "resolve" });
 
         setDisplayState((prev) => {
           const next = JSON.parse(JSON.stringify(prev));
-          const dracula = next.players.find(
-            (p) => p.faction === FACTION.DRACULA,
-          );
-          const vh = next.players.find(
-            (p) => p.faction === FACTION.VAN_HELSING,
-          );
+          const dracula = next.players.find((p) => p.faction === FACTION.DRACULA);
+          const vh = next.players.find((p) => p.faction === FACTION.VAN_HELSING);
 
           if (step.winner === FACTION.DRACULA) {
             vh.hand[step.districtIndex - 1].isLoser = true;
@@ -182,26 +215,25 @@ const GameRoom = () => {
       }, 800);
 
       return () => clearTimeout(timer1);
-    } else if (
-      currentCombatIndex === combatQueue.length &&
-      combatQueue.length > 0
-    ) {
+
+    } else if (currentCombatIndex === combatQueue.length && combatQueue.length > 0) {
       setActiveCombatDistrict(null);
       const timer = setTimeout(() => {
         setCombatQueue([]);
         setCurrentCombatIndex(-1);
-        setDisplayState(gameState);
-        displayStateRef.current = gameState;
+        
+        // FIX LỖI: Không reset lại State về dữ liệu Server (máu chưa trừ) nếu đang Review
+        const isReviewPhase = gameState.status === 3 || gameState.status === "CombatReview";
+        if (!isReviewPhase) {
+          setDisplayState(gameState);
+          displayStateRef.current = gameState;
+        }
 
-        if (gameState.status === ROOM_STATUS.PLAYING) {
+        if (gameState.status === ROOM_STATUS.PLAYING || gameState.status === 1) {
           const isFinalRound = gameState.roundNumber === 5;
           setAnnouncement({
-            subtitle: isFinalRound
-              ? "Đêm cuối cùng. Không còn đường lui."
-              : "Phán xét hoàn tất.",
-            title: isFinalRound
-              ? "TRẬN CHIẾN CUỐI"
-              : `BẮT ĐẦU VÒNG ${gameState.roundNumber}`,
+            subtitle: isFinalRound ? "Đêm cuối cùng. Không còn đường lui." : "Phán xét hoàn tất.",
+            title: isFinalRound ? "TRẬN CHIẾN CUỐI" : `BẮT ĐẦU VÒNG ${gameState.roundNumber}`,
             titleClass: isFinalRound
               ? "text-game-vanhelsing-blood drop-shadow-[0_0_50px_rgba(154,27,31,1)]"
               : "text-game-bone-white drop-shadow-[0_0_30px_rgba(255,255,255,0.6)]",
@@ -214,7 +246,7 @@ const GameRoom = () => {
   }, [currentCombatIndex, combatQueue, gameState]);
 
   useEffect(() => {
-    if (displayState?.status === ROOM_STATUS.PLAYING && !showGameBoard) {
+    if ((displayState?.status === ROOM_STATUS.PLAYING || displayState?.status === 1) && !showGameBoard) {
       setIsLoading(false);
       setIsTransitioning(true);
 
@@ -241,20 +273,13 @@ const GameRoom = () => {
     (p) => p.userId.toLowerCase() === user?.id?.toLowerCase(),
   );
   const isDracula = myPlayer?.faction === FACTION.DRACULA;
-  const isMyTurn =
-    !isAnimatingCombat &&
-    targetState?.currentTurnUserId?.toLowerCase() === user?.id?.toLowerCase();
+  const isMyTurn = !isAnimatingCombat && targetState?.currentTurnUserId?.toLowerCase() === user?.id?.toLowerCase();
 
   const hasDrawnCard = !!myPlayer?.drawnCard;
   const pendingSkill = targetState?.pendingSkillValue;
   const discardPileLength = targetState?.discardPile?.length || 0;
 
-  const canCallEndRound =
-    showGameBoard &&
-    isMyTurn &&
-    !hasDrawnCard &&
-    !pendingSkill &&
-    discardPileLength >= 6;
+  const canCallEndRound = showGameBoard && isMyTurn && !hasDrawnCard && !pendingSkill && discardPileLength >= 6;
 
   const handleSelectRole = async (faction) => {
     setSelectedRole(faction);
@@ -269,12 +294,7 @@ const GameRoom = () => {
   };
 
   const handleCallEndRound = async () => {
-    if (
-      canCallEndRound &&
-      window.confirm(
-        "Mộ bài đã đủ 6 lá. Bạn có muốn Kết Thúc Vòng ngay lúc này?",
-      )
-    ) {
+    if (canCallEndRound && window.confirm("Mộ bài đã đủ 6 lá. Bạn có muốn Kết Thúc Vòng ngay lúc này?")) {
       await callEndRound(roomCode);
     }
   };
@@ -312,34 +332,18 @@ const GameRoom = () => {
     );
   }
 
-  const isWaiting =
-    !targetState ||
-    (targetState.status === ROOM_STATUS.WAITING &&
-      targetState.players?.length < 2);
-  const isSelectingRole =
-    targetState?.status === ROOM_STATUS.WAITING &&
-    targetState?.players?.length === 2;
-  const isFinished = displayState?.status === ROOM_STATUS.FINISHED;
+  const isWaiting = !targetState || (targetState.status === ROOM_STATUS.WAITING && targetState.players?.length < 2);
+  const isSelectingRole = targetState?.status === ROOM_STATUS.WAITING && targetState?.players?.length === 2;
+  const isFinished = displayState?.status === ROOM_STATUS.FINISHED || displayState?.status === 2;
 
   const renderCurrentPhase = () => {
     if (isWaiting) return <WaitingPhase roomCode={roomCode} />;
-    if (isSelectingRole)
-      return (
-        <RoleSelectionPhase
-          selectedRole={selectedRole}
-          isLoading={isLoading}
-          onSelectRole={handleSelectRole}
-        />
-      );
+    if (isSelectingRole) return <RoleSelectionPhase selectedRole={selectedRole} isLoading={isLoading} onSelectRole={handleSelectRole} />;
     if (isTransitioning) return <TransitionPhase />;
     if (showGameBoard || isFinished) {
       return (
         <div className="flex-grow w-full h-full animate-in fade-in duration-1000 relative">
-          <GameBoard
-            displayState={displayState}
-            activeCombatDistrict={activeCombatDistrict}
-            isAnimatingCombat={isAnimatingCombat}
-          />
+          <GameBoard displayState={displayState} activeCombatDistrict={activeCombatDistrict} isAnimatingCombat={isAnimatingCombat} />
         </div>
       );
     }
@@ -354,9 +358,7 @@ const GameRoom = () => {
             <h2
               className={`text-5xl md:text-7xl font-black uppercase mb-6 font-['Playfair_Display'] ${targetState.winnerId.toLowerCase() === user.id.toLowerCase() ? "text-game-dracula-orange drop-shadow-[0_0_20px_rgba(225,85,37,0.5)]" : "text-game-vanhelsing-blood drop-shadow-[0_0_20px_rgba(154,27,31,0.5)]"}`}
             >
-              {targetState.winnerId.toLowerCase() === user.id.toLowerCase()
-                ? "Chiến Thắng"
-                : "Thất Bại"}
+              {targetState.winnerId.toLowerCase() === user.id.toLowerCase() ? "Chiến Thắng" : "Thất Bại"}
             </h2>
             <p className="text-white/60 mb-10 uppercase tracking-[0.3em] text-xs font-bold">
               {targetState.endReason === "Surrender"
@@ -371,11 +373,7 @@ const GameRoom = () => {
                 resetGame();
                 navigate(ROUTES.LOBBY);
               }}
-              variant={
-                targetState.winnerId.toLowerCase() === user.id.toLowerCase()
-                  ? "dracula"
-                  : "vanhelsing"
-              }
+              variant={targetState.winnerId.toLowerCase() === user.id.toLowerCase() ? "dracula" : "vanhelsing"}
             >
               Trở Về Sảnh Chờ
             </Button>
@@ -401,9 +399,7 @@ const GameRoom = () => {
               >
                 {announcement.subtitle}
               </motion.p>
-              <h2
-                className={`text-6xl md:text-8xl font-black uppercase font-['Playfair_Display'] ${announcement.titleClass}`}
-              >
+              <h2 className={`text-6xl md:text-8xl font-black uppercase font-['Playfair_Display'] ${announcement.titleClass}`}>
                 {announcement.title}
               </h2>
             </div>
@@ -429,10 +425,7 @@ const GameRoom = () => {
             </div>
             <div className="h-4 w-px bg-white/10 hidden sm:block" />
             <h2 className="text-xl font-black text-game-bone-white uppercase tracking-widest shadow-text-md font-['Playfair_Display'] hidden xl:block whitespace-nowrap">
-              Hiệp Ước:{" "}
-              <span className="text-game-dracula-orange tracking-[0.3em] ml-2">
-                {roomCode}
-              </span>
+              Hiệp Ước: <span className="text-game-dracula-orange tracking-[0.3em] ml-2">{roomCode}</span>
             </h2>
           </div>
 
@@ -445,9 +438,7 @@ const GameRoom = () => {
                   </div>
                 ) : (
                   <div className="bg-[#0a0f12]/80 border border-white/10 text-white/40 px-6 py-1.5 xl:px-8 xl:py-2 rounded-full text-[10px] xl:text-xs font-bold uppercase tracking-[0.2em]">
-                    {isAnimatingCombat
-                      ? "Đang tiến hành phán xét..."
-                      : "Đối thủ đang suy nghĩ..."}
+                    {isAnimatingCombat ? "Đang tiến hành phán xét..." : "Đối thủ đang suy nghĩ..."}
                   </div>
                 )}
               </div>
@@ -468,18 +459,8 @@ const GameRoom = () => {
               className="p-2 text-white/40 hover:text-game-dracula-orange transition-colors duration-300 outline-none"
               title="Sách Luật"
             >
-              <svg
-                className="w-6 h-6"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth="2"
-                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"
-                />
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
               </svg>
             </button>
             <div className="w-px h-6 bg-white/10 hidden sm:block"></div>
@@ -498,18 +479,13 @@ const GameRoom = () => {
         </header>
       )}
 
-      <main
-        className={`flex-grow p-6 md:p-10 relative z-10 flex flex-col ${isTransitioning ? "p-0" : ""}`}
-      >
+      <main className={`flex-grow p-6 md:p-10 relative z-10 flex flex-col ${isTransitioning ? "p-0" : ""}`}>
         <div className="max-w-7xl mx-auto h-full w-full flex-grow flex flex-col justify-center">
           {renderCurrentPhase()}
         </div>
       </main>
 
-      <RulebookModal
-        isOpen={isRulebookOpen}
-        onClose={() => setIsRulebookOpen(false)}
-      />
+      <RulebookModal isOpen={isRulebookOpen} onClose={() => setIsRulebookOpen(false)} />
     </div>
   );
 };

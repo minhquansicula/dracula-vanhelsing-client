@@ -10,6 +10,7 @@ import boardBg from "../../assets/images/board-bg.png";
 import { districts } from "./bonus/mapConfig";
 import { AuthContext } from "../../contexts/AuthContext";
 import useGameStore from "../../store/useGameStore";
+import TurnTimer from "../ui/TurnTimer";
 
 const smoothTransition =
   "transition-[transform,opacity,filter,box-shadow] duration-400 ease-[cubic-bezier(0.25,1,0.5,1)] transform-gpu";
@@ -21,7 +22,7 @@ const GameBoard = ({
 }) => {
   const { roomCode } = useParams();
   const { user } = useContext(AuthContext);
-  const { drawCard, playCard, submitSkillAction } = useGameStore();
+  const { drawCard, playCard, submitSkillAction, readyForNextRound, isActionPending } = useGameStore();
 
   const [hoveredDistrict, setHoveredDistrict] = useState(null);
   const [selectedOwnCards, setSelectedOwnCards] = useState([]);
@@ -45,7 +46,8 @@ const GameBoard = ({
   const isMyTurn =
     !isAnimatingCombat &&
     gameState.currentTurnUserId.toLowerCase() === user.id.toLowerCase();
-
+  const isReviewPhase = gameState?.status === 3 || gameState?.status === "CombatReview";
+  const myPlayerReady = myPlayer?.isReadyForNextRound;
   const hasDrawnCard = !!myPlayer?.drawnCard;
   const pendingSkill = gameState.pendingSkillValue;
 
@@ -114,7 +116,53 @@ const GameBoard = ({
   };
 
   return (
-    <div className="fixed inset-0 pt-24 pb-8 w-full h-full bg-[#0a0f12] flex items-center justify-center font-['Inter'] px-8 select-none overflow-hidden box-border perspective-1000">
+    // THÊM: Biến isActionPending để khóa màn hình (pointer-events-none) và làm mờ khi đang gọi API
+    <div 
+      className={`fixed inset-0 pt-24 pb-8 w-full h-full bg-[#0a0f12] flex items-center justify-center font-['Inter'] px-8 select-none overflow-hidden box-border perspective-1000 transition-all duration-300
+      ${isActionPending ? "pointer-events-none opacity-90 grayscale-[20%]" : ""}`}
+    >
+      {/* 1. THANH TURN TIMER NẰM Ở TRÊN CÙNG */}
+      <TurnTimer 
+        currentTurnUserId={gameState.currentTurnUserId}
+        myUserId={user.id}
+        status={gameState.status}
+      />
+
+      {/* 2. MÀN HÌNH CHỜ COMBAT REVIEW (NGHIỆM THI) */}
+      {isReviewPhase && !isAnimatingCombat && (
+        <div className="fixed bottom-8 xl:bottom-12 left-1/2 -translate-x-1/2 z-[60] animate-bounce-slight">
+          <div className="bg-[#05080a]/95 border border-game-dracula-orange/40 px-6 py-4 xl:px-8 xl:py-5 flex flex-row items-center gap-6 shadow-[0_20px_50px_rgba(0,0,0,0.9)] rounded-full backdrop-blur-md">
+            
+            <div className="flex flex-col items-start">
+              <h2 className="text-lg xl:text-xl font-black text-game-dracula-orange tracking-widest uppercase">
+                Vòng {gameState.roundNumber} kết thúc
+              </h2>
+              <p className="text-white/60 text-xs xl:text-sm">
+                Hai bên hãy kiểm tra lại kết quả
+              </p>
+            </div>
+
+            <div className="w-px h-10 bg-white/10"></div> {/* Đường kẻ dọc phân cách */}
+
+            {myPlayerReady ? (
+              <div className="px-6 py-3 bg-white/5 border border-white/10 rounded-full text-white/50 font-bold uppercase text-sm flex items-center gap-3">
+                <svg className="w-4 h-4 animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Chờ đối thủ...
+              </div>
+            ) : (
+              <button
+                onClick={() => readyForNextRound(roomCode)}
+                className="px-8 py-3 bg-game-dracula-orange text-black font-black uppercase text-sm xl:text-base rounded-full shadow-[0_0_20px_rgba(225,85,37,0.5)] hover:scale-105 hover:bg-white transition-all cursor-pointer pointer-events-auto"
+              >
+                Sẵn sàng Vòng {gameState.roundNumber + 1}
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+      {/* CÁC KHỐI POPUP CŨ CỦA BẠN GIỮ NGUYÊN BÊN DƯỚI */}
       {isTargetingOpponentCard && (
         <div className="fixed top-24 left-1/2 -translate-x-1/2 z-50 pointer-events-none flex flex-col items-center">
           <div className="bg-game-vanhelsing-blood/90 backdrop-blur-md border border-game-vanhelsing-blood text-white px-8 py-3 rounded-full text-sm xl:text-base font-black uppercase tracking-[0.2em] shadow-[0_0_30px_rgba(154,27,31,0.8)] animate-pulse flex items-center gap-3">

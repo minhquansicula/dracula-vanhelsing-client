@@ -7,6 +7,7 @@ const useGameStore = create((set, get) => ({
   gameState: null,
   error: null,
   roomCode: null,
+  isActionPending: false,
 
   connect: async (token) => {
     if (get().isConnected) return;
@@ -81,35 +82,68 @@ const useGameStore = create((set, get) => ({
     }
   },
 
-  drawCard: async (code) => {
+  drawCard: async (roomCode) => {
+    if (get().isActionPending) {
+        console.warn("Spam click bị chặn (DrawCard)!");
+        return;
+    }
+    set({ isActionPending: true });
     try {
-      await signalrService.drawCard(code);
-    } catch (error) {
-      set({ error: "Không thể rút bài." });
+      // Lưu ý: Cần đảm bảo file `signalrService.js` của bạn có hàm `drawCard(roomCode)`
+      // Nếu chưa có, bạn phải thêm vào signalrService.js: drawCard: (roomCode) => connection.invoke("DrawCard", roomCode)
+      await signalrService.connection.invoke("DrawCard", roomCode);
+    } catch (err) {
+      console.error("Lỗi bóc bài:", err);
+    } finally {
+      set({ isActionPending: false });
     }
   },
 
-  playCard: async (code, discardedCardId) => {
+  playCard: async (roomCode, discardedCardId) => {
+    if (get().isActionPending) return;
+    set({ isActionPending: true });
     try {
-      await signalrService.playCard(code, discardedCardId);
-    } catch (error) {
-      set({ error: "Không thể đánh bài." });
+      await signalrService.connection.invoke("PlayCard", roomCode, discardedCardId);
+    } catch (err) {
+      console.error("Lỗi đánh bài:", err);
+    } finally {
+      set({ isActionPending: false });
     }
   },
 
-  submitSkillAction: async (code, payload) => {
+  submitSkillAction: async (roomCode, payload) => {
+    if (get().isActionPending) return;
+    set({ isActionPending: true });
     try {
-      await signalrService.submitSkillAction(code, payload);
-    } catch (error) {
-      set({ error: "Lỗi khi dùng kỹ năng." });
+      await signalrService.connection.invoke("SubmitSkillAction", roomCode, payload);
+    } catch (err) {
+      console.error("Lỗi dùng skill:", err);
+    } finally {
+      set({ isActionPending: false });
     }
   },
 
-  callEndRound: async (code) => {
+  callEndRound: async (roomCode) => {
+    if (get().isActionPending) return;
+    set({ isActionPending: true });
     try {
-      await signalrService.callEndRound(code);
-    } catch (error) {
-      set({ error: "Lỗi khi gọi kết thúc vòng." });
+      await signalrService.connection.invoke("CallEndRound", roomCode);
+    } catch (err) {
+      console.error("Lỗi kết thúc vòng:", err);
+    } finally {
+      set({ isActionPending: false });
+    }
+  },
+
+  readyForNextRound: async (roomCode) => {
+    if (get().isActionPending) return;
+    set({ isActionPending: true });
+    try {
+      await signalrService.connection.invoke("ReadyForNextRound", roomCode); 
+    } catch (err) {
+      console.error("Lỗi xác nhận qua vòng:", err);
+    } finally {
+      set({ isActionPending: false });
     }
   },
 
