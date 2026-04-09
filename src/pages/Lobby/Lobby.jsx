@@ -6,6 +6,7 @@ import { ROUTES } from "../../constants/routes";
 import useGameStore from "../../store/useGameStore";
 import RoomCodeInput from "../../components/ui/RoomCodeInput";
 import RulebookModal from "../../components/game/RulebookModal";
+import SettingsMenu from "../../components/ui/SettingsMenu";
 
 const Lobby = () => {
   const [isLoading, setIsLoading] = useState(false);
@@ -126,7 +127,7 @@ const Lobby = () => {
             <div className="w-px h-4 bg-white/10 hidden sm:block"></div>
 
             {user ? (
-              <div className="flex items-center gap-6">
+              <div className="flex items-center gap-4">
                 <div className="text-right hidden sm:block">
                   <p className="text-[9px] uppercase tracking-widest text-white/30 mb-1">
                     Đã định danh
@@ -135,12 +136,9 @@ const Lobby = () => {
                     {user.username}
                   </p>
                 </div>
-                <button
-                  onClick={logout}
-                  className="h-10 px-6 border border-white/10 hover:border-game-vanhelsing-blood hover:text-game-vanhelsing-blood transition-all text-[10px] uppercase font-bold tracking-widest"
-                >
-                  Thoát
-                </button>
+                <div className="w-px h-4 bg-white/10 hidden sm:block"></div>
+                {/* Gắn Menu Setting bản Lobby vào đây, truyền hàm logout */}
+                <SettingsMenu isLobby={true} onLogout={logout} />
               </div>
             ) : (
               <div className="flex gap-6 xl:gap-8 items-center">
@@ -156,6 +154,9 @@ const Lobby = () => {
                 >
                   Khởi tạo
                 </Link>
+                <div className="w-px h-4 bg-white/10 hidden sm:block"></div>
+                {/* Vẫn gắn Setting Menu dù chưa đăng nhập để khách chỉnh âm thanh */}
+                <SettingsMenu isLobby={true} />
               </div>
             )}
           </nav>

@@ -12,6 +12,7 @@ import WaitingPhase from "../../components/game/phases/WaitingPhase";
 import RoleSelectionPhase from "../../components/game/phases/RoleSelectionPhase";
 import TransitionPhase from "../../components/game/phases/TransitionPhase";
 import RulebookModal from "../../components/game/RulebookModal";
+import SettingsMenu from "../../components/ui/SettingsMenu";
 
 const FACTION = { DRACULA: 0, VAN_HELSING: 1 };
 const ROOM_STATUS = { WAITING: 0, PLAYING: 1, FINISHED: 2 };
@@ -36,7 +37,6 @@ const GameRoom = () => {
 
   const [selectedRole, setSelectedRole] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
-  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isRulebookOpen, setIsRulebookOpen] = useState(false);
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [showGameBoard, setShowGameBoard] = useState(false);
@@ -47,7 +47,6 @@ const GameRoom = () => {
   const displayStateRef = useRef(null);
   const [combatQueue, setCombatQueue] = useState([]);
   const [currentCombatIndex, setCurrentCombatIndex] = useState(-1);
-  // Trạng thái khu vực giao tranh giờ là một Object: { index, phase: 'focus' | 'resolve' }
   const [activeCombatDistrict, setActiveCombatDistrict] = useState(null);
   const [announcement, setAnnouncement] = useState(null);
 
@@ -122,7 +121,6 @@ const GameRoom = () => {
         }
       }
 
-      // Ngửa toàn bộ bài để bắt đầu chiếu phim
       const revealedState = JSON.parse(JSON.stringify(oldState));
       revealedState.players.forEach((p) =>
         p.hand.forEach((c) => (c.isRevealed = true)),
@@ -144,11 +142,9 @@ const GameRoom = () => {
     if (currentCombatIndex >= 0 && currentCombatIndex < combatQueue.length) {
       const step = combatQueue[currentCombatIndex];
 
-      // PHASE 1: LẤY ĐÀ (FOCUS) - Hai bài bay lên, phát sáng chờ đợi
       setActiveCombatDistrict({ index: step.districtIndex, phase: "focus" });
 
       const timer1 = setTimeout(() => {
-        // PHASE 2: VA CHẠM (RESOLVE) - Trừ máu, kẻ thua gục xuống, kẻ thắng rực sáng
         setActiveCombatDistrict({
           index: step.districtIndex,
           phase: "resolve",
@@ -163,7 +159,6 @@ const GameRoom = () => {
             (p) => p.faction === FACTION.VAN_HELSING,
           );
 
-          // Cấp cờ VInh quang / Gục ngã cho từng lá bài
           if (step.winner === FACTION.DRACULA) {
             vh.hand[step.districtIndex - 1].isLoser = true;
             dracula.hand[step.districtIndex - 1].isWinner = true;
@@ -178,21 +173,19 @@ const GameRoom = () => {
           return next;
         });
 
-        // Chờ người chơi tận hưởng cảm giác đánh trúng rồi mới qua nhịp tiếp theo
         const timer2 = setTimeout(() => {
           setActiveCombatDistrict(null);
           setCurrentCombatIndex((idx) => idx + 1);
         }, 1200);
 
         return () => clearTimeout(timer2);
-      }, 800); // Thời gian bay lên lấy đà mất 0.8s
+      }, 800);
 
       return () => clearTimeout(timer1);
     } else if (
       currentCombatIndex === combatQueue.length &&
       combatQueue.length > 0
     ) {
-      // HẬU KIẾN: Kết thúc chùm Combat
       setActiveCombatDistrict(null);
       const timer = setTimeout(() => {
         setCombatQueue([]);
@@ -272,7 +265,6 @@ const GameRoom = () => {
   const handleSurrender = async () => {
     if (window.confirm("Bạn có chắc chắn muốn bỏ cuộc?")) {
       await surrender(roomCode);
-      setIsSettingsOpen(false);
     }
   };
 
@@ -346,7 +338,7 @@ const GameRoom = () => {
           <GameBoard
             displayState={displayState}
             activeCombatDistrict={activeCombatDistrict}
-            isAnimatingCombat={isAnimatingCombat} // THÊM DÒNG NÀY
+            isAnimatingCombat={isAnimatingCombat}
           />
         </div>
       );
@@ -491,60 +483,17 @@ const GameRoom = () => {
               </svg>
             </button>
             <div className="w-px h-6 bg-white/10 hidden sm:block"></div>
-            <div className="relative">
-              <button
-                onClick={() => setIsSettingsOpen(!isSettingsOpen)}
-                className="p-2 text-white/40 hover:text-white hover:rotate-90 transition-all duration-300 outline-none"
-              >
-                <svg
-                  className="w-6 h-6"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"
-                  />
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"
-                  />
-                </svg>
-              </button>
-              {isSettingsOpen && (
-                <div className="absolute top-full mt-4 right-0 w-56 bg-[#0d1316]/95 backdrop-blur-md border border-white/10 rounded-sm shadow-[0_10px_40px_rgba(0,0,0,0.8)] overflow-hidden z-50">
-                  <div className="px-4 py-3 border-b border-white/5">
-                    <p className="text-[10px] text-white/40 uppercase tracking-[0.2em]">
-                      Tùy chỉnh
-                    </p>
-                  </div>
-                  <button
-                    onClick={async () => {
-                      setIsSettingsOpen(false);
-                      await leaveRoom();
-                      navigate(ROUTES.LOBBY);
-                    }}
-                    className="w-full text-left px-4 py-3 text-xs uppercase tracking-widest text-white/70 hover:bg-white/5 hover:text-white transition-colors"
-                    disabled={showGameBoard && !isFinished}
-                  >
-                    Về Sảnh (Thoát)
-                  </button>
-                  {showGameBoard && !isFinished && (
-                    <button
-                      onClick={handleSurrender}
-                      className="w-full text-left px-4 py-3 text-xs uppercase tracking-widest text-game-vanhelsing-blood hover:bg-game-vanhelsing-blood/10 transition-colors font-bold"
-                    >
-                      Đầu Hàng
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
+
+            <SettingsMenu
+              onLeaveRoom={async () => {
+                await leaveRoom();
+                resetGame();
+                navigate(ROUTES.LOBBY);
+              }}
+              onSurrender={handleSurrender}
+              showSurrender={showGameBoard}
+              isFinished={isFinished}
+            />
           </div>
         </header>
       )}

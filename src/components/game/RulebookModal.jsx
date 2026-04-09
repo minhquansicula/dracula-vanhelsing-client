@@ -8,10 +8,10 @@ const RulebookModal = ({ isOpen, onClose }) => {
   if (!isOpen) return null;
 
   const tabs = [
-    { id: "goal", label: "Mục Tiêu & Tổng Quan" },
+    { id: "goal", label: "Mục Tiêu & Điều Kiện" },
     { id: "gameplay", label: "Luật Chơi Cốt Lõi" },
-    { id: "combat", label: "Giao Tranh Quận" },
-    { id: "skills", label: "Quyền Năng (1-8)" },
+    { id: "combat", label: "Phán Xét (Giao Tranh)" },
+    { id: "skills", label: "Quyền Năng Lá Bài" },
   ];
 
   return (
@@ -88,7 +88,7 @@ const RulebookModal = ({ isOpen, onClose }) => {
             {/* Nút đóng (Desktop) */}
             <button
               onClick={onClose}
-              className="absolute top-6 right-6 p-2 text-white/30 hover:text-white hover:rotate-90 transition-all duration-300 hidden md:block"
+              className="absolute top-6 right-6 p-2 text-white/30 hover:text-white hover:rotate-90 transition-all duration-300 hidden md:block outline-none"
             >
               <svg
                 className="w-6 h-6"
@@ -114,37 +114,46 @@ const RulebookModal = ({ isOpen, onClose }) => {
                 <h3 className="text-2xl font-black text-game-vanhelsing-blood uppercase tracking-widest font-['Playfair_Display']">
                   Mục Tiêu & Điều Kiện Thắng
                 </h3>
+                <p className="text-sm italic text-white/50 border-l-2 border-white/20 pl-4">
+                  "Sương mù bao phủ London. Một kẻ săn lùng sinh mạng, kẻ còn
+                  lại săn lùng ác quỷ. Đêm nay, chỉ một người được đón bình
+                  minh."
+                </p>
                 <div className="space-y-6">
-                  <div className="bg-game-dracula-orange/5 border border-game-dracula-orange/20 p-6 rounded-sm">
+                  <div className="bg-game-dracula-orange/5 border border-game-dracula-orange/20 p-6 rounded-sm relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-game-dracula-orange/10 rounded-full blur-2xl -mr-10 -mt-10" />
                     <h4 className="text-game-dracula-orange font-bold uppercase tracking-widest mb-3">
                       Phe Dracula
                     </h4>
                     <p className="text-sm">
-                      Bắt đầu với 12 HP (Máu). Bạn chiến thắng ngay lập tức nếu
-                      thực hiện được 1 trong 2 điều sau:
+                      Bạn là Chúa tể Bóng đêm. Bạn có{" "}
+                      <strong>12 HP (Máu)</strong>. Bạn sẽ chiến thắng nếu đạt 1
+                      trong 2 điều kiện:
                     </p>
                     <ul className="list-disc list-inside mt-3 text-sm space-y-2 opacity-80">
                       <li>
-                        Biến toàn bộ 4 Dân Làng ở cùng 1 Quận bất kỳ thành Ma Cà
-                        Rồng.
+                        Biến toàn bộ <strong>4 Dân Làng</strong> ở cùng 1 Quận
+                        bất kỳ thành Ma Cà Rồng.
                       </li>
                       <li>
-                        Sống sót thành công cho đến khi kết thúc vòng đấu thứ 5.
+                        Sống sót thành công cho đến khi{" "}
+                        <strong>kết thúc Vòng đấu thứ 5</strong>.
                       </li>
                     </ul>
                   </div>
-                  <div className="bg-game-vanhelsing-blood/5 border border-game-vanhelsing-blood/20 p-6 rounded-sm">
+                  <div className="bg-game-vanhelsing-blood/5 border border-game-vanhelsing-blood/20 p-6 rounded-sm relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-24 h-24 bg-game-vanhelsing-blood/10 rounded-full blur-2xl -mr-10 -mt-10" />
                     <h4 className="text-game-vanhelsing-blood font-bold uppercase tracking-widest mb-3">
                       Phe Van Helsing
                     </h4>
                     <p className="text-sm">
-                      Không có lượng máu cố định. Bạn chiến thắng ngay lập tức
-                      nếu:
+                      Bạn là Thợ săn dạn dày kinh nghiệm. Bạn không có lượng máu
+                      cố định. Mục tiêu duy nhất của bạn:
                     </p>
                     <ul className="list-disc list-inside mt-3 text-sm space-y-2 opacity-80">
                       <li>
-                        Rút cạn 12 HP của Dracula trước khi kết thúc vòng đấu
-                        thứ 5.
+                        Rút cạn <strong>12 HP</strong> của Dracula trước khi
+                        bình minh của Vòng thứ 5 ló rạng.
                       </li>
                     </ul>
                   </div>
@@ -162,47 +171,78 @@ const RulebookModal = ({ isOpen, onClose }) => {
                   Luật Chơi Cốt Lõi
                 </h3>
                 <p className="text-sm">
-                  Trò chơi diễn ra tối đa trong 5 vòng. Ở mỗi lượt, bạn phải
-                  thực hiện chuỗi hành động sau:
+                  Trò chơi diễn ra tối đa trong 5 vòng. Mỗi người chơi bắt đầu
+                  với 5 lá bài úp (tương ứng với 5 Quận). Ở mỗi lượt của mình,
+                  bạn <strong>phải</strong> thực hiện chuỗi hành động sau:
                 </p>
 
-                <div className="pl-4 border-l border-white/20 space-y-4 text-sm">
-                  <p>
-                    <strong>1. Rút bài:</strong> Rút 1 lá bài từ bộ bài chính.
-                  </p>
-                  <p>
-                    <strong>2. Đánh bài:</strong> Bạn có 2 lựa chọn:
-                  </p>
-                  <ul className="list-disc list-inside pl-4 text-white/60 space-y-2">
-                    <li>Vứt thẳng lá vừa rút vào Mộ Bài.</li>
-                    <li>
-                      Đổi lá vừa rút với 1 trong 5 lá đang úp trên tay của bạn,
-                      sau đó vứt lá bài cũ vừa bị đổi vào Mộ Bài.
-                    </li>
-                  </ul>
-                  <p>
-                    <strong>3. Kích hoạt Kỹ năng:</strong> Kỹ năng của lá bài
-                    vừa ném vào Mộ Bài sẽ{" "}
-                    <span className="text-game-dracula-orange font-bold">
-                      bắt buộc được kích hoạt
-                    </span>{" "}
-                    (dù đó là lá vừa rút hay lá bị thay ra).
-                  </p>
+                <div className="pl-4 border-l border-white/20 space-y-5 text-sm">
+                  <div>
+                    <strong className="text-white text-base">1. Rút bài</strong>
+                    <p className="text-white/60 mt-1">
+                      Rút 1 lá bài từ Bộ Bài Chính (Draw Pile).
+                    </p>
+                  </div>
+                  <div>
+                    <strong className="text-white text-base">
+                      2. Đánh bài
+                    </strong>
+                    <p className="text-white/60 mt-1 mb-2">
+                      Bạn có 2 lựa chọn:
+                    </p>
+                    <ul className="list-disc list-inside pl-2 text-white/60 space-y-1">
+                      <li>
+                        <span className="text-white">Vứt thẳng</span> lá vừa rút
+                        vào Mộ Bài (Discard Pile).
+                      </li>
+                      <li>
+                        <span className="text-white">Tráo đổi</span> lá vừa rút
+                        với 1 trong 5 lá đang nằm trên tay của bạn, sau đó vứt
+                        lá bài cũ vừa bị đổi vào Mộ Bài.
+                      </li>
+                    </ul>
+                  </div>
+                  <div>
+                    <strong className="text-white text-base">
+                      3. Kích hoạt Quyền năng
+                    </strong>
+                    <p className="text-white/60 mt-1">
+                      Kỹ năng của lá bài bị vứt vào Mộ Bài sẽ{" "}
+                      <span className="text-game-dracula-orange font-bold">
+                        bắt buộc được kích hoạt
+                      </span>{" "}
+                      (dù đó là lá bạn vừa rút hay lá bạn thay từ trên tay
+                      xuống).
+                    </p>
+                  </div>
                 </div>
 
-                <div className="bg-white/5 p-6 border border-white/10 rounded-sm">
+                <div className="bg-white/5 p-6 border border-white/10 rounded-sm mt-6">
                   <h4 className="text-white uppercase tracking-widest mb-2 font-bold text-sm">
-                    Gọi Kết Thúc Vòng
+                    Kết Thúc Vòng Đấu
                   </h4>
-                  <p className="text-xs text-white/60 leading-relaxed">
-                    Thay vì rút và vứt bài, nếu Mộ Bài có từ{" "}
-                    <strong className="text-game-dracula-orange">
-                      6 lá bài trở lên
-                    </strong>
-                    , bạn có thể gọi Kết Thúc Vòng. Đối thủ sẽ được đánh thêm 1
-                    lượt cuối cùng trước khi vòng đấu khép lại và bắt đầu bước
-                    Giao Tranh.
+                  <p className="text-xs text-white/60 leading-relaxed mb-3">
+                    Vòng đấu sẽ lập tức khép lại và tiến vào pha Giao Tranh nếu
+                    xảy ra 1 trong 3 trường hợp:
                   </p>
+                  <ul className="list-decimal list-inside text-xs text-white/60 space-y-2">
+                    <li>
+                      <strong className="text-white">Gọi kết thúc:</strong> Thay
+                      vì rút bài, nếu Mộ Bài có từ <strong>6 lá trở lên</strong>
+                      , bạn có thể gọi Kết thúc vòng. Đối thủ được đi thêm 1
+                      lượt cuối cùng.
+                    </li>
+                    <li>
+                      <strong className="text-white">Hết bài rút:</strong> Khi
+                      lá bài cuối cùng của Bộ bài được rút, vòng đấu tự động kết
+                      thúc sau lượt đó.
+                    </li>
+                    <li>
+                      <strong className="text-white">Dùng lá số 8:</strong> Đánh
+                      lá bài số 8 xuống Mộ bài. Vòng đấu kết thúc ngay lập tức,
+                      đối thủ mất luôn lượt đi cuối.
+                    </li>
+                  </ul>
                 </div>
               </motion.div>
             )}
@@ -214,64 +254,66 @@ const RulebookModal = ({ isOpen, onClose }) => {
                 className="space-y-8"
               >
                 <h3 className="text-2xl font-black text-game-bone-white uppercase tracking-widest font-['Playfair_Display']">
-                  Giao Tranh & Tính Điểm
+                  Phán Xét (Giao Tranh)
                 </h3>
                 <p className="text-sm">
-                  Khi vòng đấu kết thúc (do hết bài rút hoặc có người Gọi Kết
-                  Thúc Vòng), hai bên sẽ lật bài và đọ sức ở từng Quận
-                  (District) từ trái sang phải.
+                  Khi vòng đấu kết thúc, Màn đêm buông xuống. Hai bên sẽ lật bài
+                  và đọ sức ở từng Quận (District) từ trái sang phải.
                 </p>
 
-                <div className="bg-[#11181c] p-6 border border-white/10 rounded-sm shadow-inner">
-                  <h4 className="text-game-dracula-orange uppercase tracking-widest mb-4 font-bold text-sm border-b border-white/10 pb-2">
+                <div className="bg-[#11181c] p-6 border border-white/10 rounded-sm shadow-inner relative">
+                  <div className="absolute top-0 right-0 w-1 h-full bg-gradient-to-b from-game-dracula-orange to-game-vanhelsing-blood opacity-50" />
+                  <h4 className="text-white uppercase tracking-widest mb-4 font-bold text-sm border-b border-white/10 pb-2">
                     Thứ Tự Ưu Tiên Thắng Thua
                   </h4>
-                  <ol className="list-decimal list-inside space-y-4 text-sm text-white/80">
+                  <ol className="list-decimal list-inside space-y-4 text-sm text-white/60">
                     <li>
-                      <span className="text-white font-bold">
-                        Chất Bài Chủ (Trump Color):
-                      </span>{" "}
-                      Nếu 1 trong 2 lá có màu trùng với màu đang đứng{" "}
-                      <strong className="text-game-dracula-orange">
-                        Cao Nhất
+                      <span className="text-game-dracula-orange font-bold">
+                        Chất Bài Chủ (Trump Color):{" "}
+                      </span>
+                      Màu sắc đang nằm ở{" "}
+                      <strong className="text-white">
+                        vị trí Cao Nhất (Top 1)
                       </strong>{" "}
-                      trên Bảng Màu, lá đó thắng.
+                      trên Bảng Xếp Hạng Màu chính là Trump Color. Nếu 1 trong 2
+                      lá là Trump Color, lá đó tự động thắng.
                     </li>
                     <li>
                       <span className="text-white font-bold">
-                        Đọ Số (Giá trị bài):
-                      </span>{" "}
-                      Nếu cả 2 cùng là Trump Color, hoặc cùng KHÔNG phải Trump
-                      Color, lá nào có{" "}
-                      <strong className="text-game-dracula-orange">
-                        số lớn hơn
-                      </strong>{" "}
+                        Đọ Số (Giá trị bài):{" "}
+                      </span>
+                      Nếu cả 2 lá bài đều là Trump Color, hoặc cả 2 đều KHÔNG
+                      phải Trump Color, lá nào có{" "}
+                      <strong className="text-white">giá trị số lớn hơn</strong>{" "}
                       sẽ thắng.
                     </li>
                     <li>
-                      <span className="text-white font-bold">Đọ Hạng Màu:</span>{" "}
-                      Nếu 2 lá <strong className="text-white">cùng số</strong>,
-                      lá nào có màu nằm ở vị trí cao hơn trên Bảng Màu (Color
-                      Ranking Board) sẽ thắng.
+                      <span className="text-white font-bold">
+                        Đọ Hạng Màu (Kẻ Phá Bĩnh):{" "}
+                      </span>
+                      Trong trường hợp hiếm hoi 2 lá bài{" "}
+                      <strong className="text-white">cùng số</strong>, lá nào có
+                      màu nằm ở vị trí cao hơn trên Bảng Xếp Hạng Màu sẽ giành
+                      chiến thắng.
                     </li>
                   </ol>
                 </div>
 
                 <div className="flex gap-4">
-                  <div className="flex-1 bg-game-dracula-orange/10 p-4 border border-game-dracula-orange/20 text-center rounded-sm">
+                  <div className="flex-1 bg-game-dracula-orange/10 p-4 border border-game-dracula-orange/20 text-center rounded-sm transition-transform hover:scale-105">
                     <p className="text-[10px] uppercase tracking-widest text-game-dracula-orange font-bold mb-2">
                       Dracula Thắng Quận
                     </p>
                     <p className="text-xs">
-                      Biến 1 Dân Làng ở Quận đó thành Ma Cà Rồng.
+                      Cắn cổ 1 Dân Làng. Khu vực đó thêm 1 Token Ma Cà Rồng.
                     </p>
                   </div>
-                  <div className="flex-1 bg-game-vanhelsing-blood/10 p-4 border border-game-vanhelsing-blood/20 text-center rounded-sm">
+                  <div className="flex-1 bg-game-vanhelsing-blood/10 p-4 border border-game-vanhelsing-blood/20 text-center rounded-sm transition-transform hover:scale-105">
                     <p className="text-[10px] uppercase tracking-widest text-game-vanhelsing-blood font-bold mb-2">
                       Van Helsing Thắng
                     </p>
                     <p className="text-xs">
-                      Tiêu hao 1 HP của Lãnh chúa Dracula.
+                      Chém trúng ác quỷ. Tiêu hao 1 HP của Lãnh chúa Dracula.
                     </p>
                   </div>
                 </div>
@@ -284,55 +326,75 @@ const RulebookModal = ({ isOpen, onClose }) => {
                 animate={{ opacity: 1, x: 0 }}
                 className="space-y-6"
               >
-                <h3 className="text-2xl font-black text-white uppercase tracking-widest font-['Playfair_Display'] mb-8">
-                  Quyền Năng Lá Bài
-                </h3>
+                <div className="flex justify-between items-end mb-8 border-b border-white/10 pb-4">
+                  <h3 className="text-2xl font-black text-white uppercase tracking-widest font-['Playfair_Display']">
+                    Quyền Năng Lá Bài
+                  </h3>
+                  <span className="text-xs text-white/40 uppercase tracking-widest">
+                    Hiệu ứng bắt buộc
+                  </span>
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {[
                     {
                       val: 1,
-                      text: "Lộ diện 1 lá bài đang úp của bản thân để hù dọa đối thủ.",
+                      name: "Nhãn Lực",
+                      text: "Lật lộ diện 1 lá bài đang úp của bản thân. Lá bài này vẫn giữ nguyên vị trí.",
                     },
                     {
                       val: 2,
-                      text: "Lật lộ diện lá bài nằm trên cùng của Bộ Bài Rút.",
+                      name: "Tiên Tri",
+                      text: "Lật lộ diện lá bài nằm trên cùng của Bộ Bài Rút. Mọi người đều thấy lá bài tiếp theo là gì.",
                     },
                     {
                       val: 3,
-                      text: "Bắt buộc đối thủ lộ diện 1 lá bài đang úp của họ.",
+                      name: "Dõi Theo",
+                      text: "Bắt buộc đối thủ phải lật lộ diện 1 lá bài đang úp của họ.",
                     },
                     {
                       val: 4,
-                      text: "Hoán đổi vị trí 2 lá bài đang nằm trên tay bạn.",
+                      name: "Tráo Đổi",
+                      text: "Bí mật hoán đổi vị trí 2 lá bài đang nằm trên tay bạn.",
                     },
                     {
                       val: 5,
-                      text: "Kích hoạt hiệu ứng Thêm Lượt. Bạn được đi tiếp 1 lượt ngay lập tức.",
+                      name: "Huyết Lực",
+                      text: "Nhận thêm 1 lượt đi. Bạn lập tức rút và đánh bài thêm một lần nữa.",
                     },
                     {
                       val: 6,
-                      text: "Hoán đổi 1 lá bài của bạn với lá bài của đối thủ ở cùng vị trí Quận tương ứng.",
+                      name: "Đánh Cắp",
+                      text: "Đổi 1 lá bài của bạn với đối thủ ở cùng vị trí Quận. Cả 2 lá bài sẽ giữ nguyên trạng thái úp/ngửa.",
                     },
                     {
                       val: 7,
-                      text: "Chọn 2 Token Màu trên Bảng Xếp Hạng Màu và hoán đổi vị trí của chúng.",
+                      name: "Thao Túng",
+                      text: "Bắt buộc: Đổi vị trí màu Chủ Đạo (Top 1) với một màu khác trên Bảng Xếp Hạng Màu.",
                     },
                     {
                       val: 8,
-                      text: "Bắt buộc Kết Thúc Vòng ngay lập tức. (Chỉ được vứt lá này nếu Mộ Bài đã có ít nhất 5 lá khác).",
+                      name: "Tử Thần",
+                      text: "Ép buộc Kết Thúc Vòng ngay lập tức. Đối thủ sẽ KHÔNG có lượt đi cuối cùng. (Chỉ được dùng nếu Mộ bài có tối thiểu 6 lá).",
                     },
                   ].map((skill) => (
                     <div
                       key={skill.val}
-                      className="flex gap-4 bg-white/5 border border-white/10 p-4 hover:border-game-dracula-orange/40 transition-colors"
+                      className="flex gap-4 bg-white/5 border border-white/10 p-4 hover:border-white/30 transition-all group"
                     >
-                      <div className="w-10 h-10 shrink-0 bg-black/60 border border-game-dracula-orange/30 flex items-center justify-center font-['Playfair_Display'] font-black text-xl text-game-dracula-orange">
-                        {skill.val}
+                      <div className="w-12 h-12 shrink-0 bg-[#0a0f12] border border-white/20 flex flex-col items-center justify-center font-['Playfair_Display'] group-hover:border-game-dracula-orange transition-colors shadow-inner">
+                        <span className="text-xl font-black text-white group-hover:text-game-dracula-orange">
+                          {skill.val}
+                        </span>
                       </div>
-                      <p className="text-xs text-white/70 leading-relaxed flex-1">
-                        {skill.text}
-                      </p>
+                      <div className="flex-1">
+                        <h5 className="text-xs font-bold uppercase tracking-widest text-game-dracula-orange mb-1">
+                          {skill.name}
+                        </h5>
+                        <p className="text-xs text-white/60 leading-relaxed">
+                          {skill.text}
+                        </p>
+                      </div>
                     </div>
                   ))}
                 </div>
