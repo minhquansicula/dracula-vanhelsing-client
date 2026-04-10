@@ -6,7 +6,6 @@ import ColorRankingBoard from "./ColorRankingBoard";
 import PlayerHand from "./PlayerHand";
 import DeckAndDiscard from "./DeckAndDiscard";
 
-import boardBg from "../../assets/images/board-bg.png";
 import { districts } from "./bonus/mapConfig";
 import { AuthContext } from "../../contexts/AuthContext";
 import useGameStore from "../../store/useGameStore";
@@ -46,7 +45,7 @@ const GameBoard = ({
   const isMyTurn =
     !isAnimatingCombat &&
     gameState.currentTurnUserId.toLowerCase() === user.id.toLowerCase();
-  const isReviewPhase = gameState?.status === 3 || gameState?.status === "CombatReview";
+  const isReviewPhase = gameState.status === 3 || gameState.status === "CombatReview";
   const myPlayerReady = myPlayer?.isReadyForNextRound;
   const hasDrawnCard = !!myPlayer?.drawnCard;
   const pendingSkill = gameState.pendingSkillValue;
@@ -292,7 +291,7 @@ const GameBoard = ({
               className="w-full relative"
             >
               <img
-                src={boardBg}
+                src="/images/board-bg.png"
                 alt="Board Background"
                 className="absolute inset-0 w-full h-full object-cover pointer-events-none"
               />

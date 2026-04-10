@@ -10,8 +10,8 @@ class AudioManager {
     this.sfxVolume = 0.8;
 
     // 1. CẤU HÌNH NHẠC NỀN (BGM)
-    this.bgm = new Howl({
-      src: ["../src/assets/sounds/test.ogg"],
+   this.bgm = new Howl({
+      src: ["/sounds/test.ogg"], // ĐÃ SỬA
       loop: true,
       volume: this.bgmVolume,
     });
@@ -19,31 +19,30 @@ class AudioManager {
     // 2. CẤU HÌNH HIỆU ỨNG ÂM THANH (SFX)
     this.sfx = {
       draw: new Howl({
-        src: ["../src/assets/sounds/draw.webm"],
+        src: ["/sounds/draw.webm"], // ĐÃ SỬA
         volume: this.sfxVolume,
       }),
       play: new Howl({
-        src: ["../src/assets/sounds/play.webm"],
+        src: ["/sounds/play.webm"], // ĐÃ SỬA
         volume: this.sfxVolume,
       }),
       clash: new Howl({
-        src: ["../src/assets/sounds/clash.webm"],
+        src: ["/sounds/clash.webm"], // ĐÃ SỬA
         volume: 1.0,
-      }), // Có thể để max vì tiếng này cần to
+      }),
       win: new Howl({
-        src: ["../src/assets/sounds/win.webm"],
+        src: ["/sounds/win.webm"], // ĐÃ SỬA
         volume: this.sfxVolume,
       }),
       lose: new Howl({
-        src: ["../src/assets/sounds/lose.webm"],
+        src: ["/sounds/lose.webm"], // ĐÃ SỬA
         volume: this.sfxVolume,
       }),
       transition: new Howl({
-        src: ["../src/assets/sounds/transition.webm"],
+        src: ["/sounds/transition.webm"], // ĐÃ SỬA
         volume: this.sfxVolume * 0.8,
       }),
     };
-
     // Mở khóa âm thanh khi click lần đầu
     const unlockAudio = () => {
       if (!this.audioUnlocked) {
