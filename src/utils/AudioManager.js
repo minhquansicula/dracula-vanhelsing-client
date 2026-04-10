@@ -1,5 +1,6 @@
 // src/utils/AudioManager.js
 import { Howl, Howler } from "howler";
+import testOgg from "../assets/sounds/test.ogg";
 
 class AudioManager {
   constructor() {
@@ -11,12 +12,15 @@ class AudioManager {
 
     // 1. CẤU HÌNH NHẠC NỀN (BGM)
    this.bgm = new Howl({
-      src: ["/sounds/test.ogg"], // ĐÃ SỬA
+      src: [testOgg], // ĐÃ SỬA để Vite đóng gói file
       loop: true,
       volume: this.bgmVolume,
     });
 
     // 2. CẤU HÌNH HIỆU ỨNG ÂM THANH (SFX)
+    // FIXME: Bạn đang sử dụng đường dẫn /sounds/ cho các file .webm dưới đây.
+    // LƯU Ý QUAN TRỌNG: Bạn cần tạo thư mục `public/sounds/` và copy các file âm thanh này (draw.webm, play.webm, ...)
+    // vào đó thì khi deploy lên Vercel mới không bị lỗi 404 (Not Found). Hiện tại trong máy đang KHÔNG CÓ các file này.
     this.sfx = {
       draw: new Howl({
         src: ["/sounds/draw.webm"], // ĐÃ SỬA

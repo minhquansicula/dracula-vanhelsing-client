@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { ROUTES } from "../../constants/routes";
 import Button from "../../components/ui/Button";
+import landingBg from "../../assets/images/landingpageBg.jpg";
 
 const LandingPage = () => {
   const navigate = useNavigate();
@@ -22,7 +23,7 @@ const LandingPage = () => {
         className={`absolute inset-0 z-0 bg-cover bg-center transition-transform duration-[1200ms] ease-in-out ${
           isTransitioning ? "scale-125 rotate-1" : "scale-105"
         }`}
-        style={{ backgroundImage: `url('/assets/images/image_3.png')` }}
+        style={{ backgroundImage: `url(${landingBg})` }}
       />
 
       {/* 2. Overlay Layers (Tạo không khí mộng mị) */}

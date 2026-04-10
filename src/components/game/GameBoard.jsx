@@ -5,6 +5,7 @@ import MapTokens from "./MapTokens";
 import ColorRankingBoard from "./ColorRankingBoard";
 import PlayerHand from "./PlayerHand";
 import DeckAndDiscard from "./DeckAndDiscard";
+import boardBgImg from "../../assets/images/board-bg.png";
 
 import { districts } from "./bonus/mapConfig";
 import { AuthContext } from "../../contexts/AuthContext";
@@ -291,7 +292,7 @@ const GameBoard = ({
               className="w-full relative"
             >
               <img
-                src="/images/board-bg.png"
+                src={boardBgImg}
                 alt="Board Background"
                 className="absolute inset-0 w-full h-full object-cover pointer-events-none"
               />

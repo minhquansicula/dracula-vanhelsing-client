@@ -29,12 +29,12 @@ for (let id = 21; id <= 40; id++) {
 // 4. Tạo mảng 4 token Màu
 const colorTokens = [];
 for (let colorId = 0; colorId <= 3; colorId++) {
-  colorTokens.push(`${basePath}images/colors/${colorId}.svg`);
+  colorTokens.push(`${basePath}images/colors/${colorId}.png`);
 }
 
 export const GAME_ASSETS_TO_PRELOAD = [
-  `${basePath}images/board-bg.png`, // ĐÃ SỬA THÀNH CHUỖI GỌI TỪ PUBLIC
-  `${basePath}images/bgCircle.png`, // ĐÃ SỬA THÀNH CHUỖI GỌI TỪ PUBLIC
+  boardBg,
+  bgCircleImg,
   `${basePath}images/cards/card_back.png`,
   ...cardImages,
   ...humanTokens,
